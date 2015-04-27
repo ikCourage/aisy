@@ -1,4 +1,4 @@
-package org.aisy.radio
+package org.aisy.checkbox
 {
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
@@ -8,13 +8,13 @@ package org.aisy.radio
 	import org.aisy.autoclear.AisyAutoClear;
 	import org.aisy.interfaces.IClear;
 
-	public class RadioUI extends Radio
+	public class CheckBoxUI extends CheckBox
 	{
 		protected var _clear:Boolean;
 		protected var _background:Boolean;
 		protected var _padding:Number = 0;
 		
-		public function RadioUI()
+		public function CheckBoxUI()
 		{
 			AisyAutoClear.put(this);
 			tabChildren = false;

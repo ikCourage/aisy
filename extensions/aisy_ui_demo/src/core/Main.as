@@ -12,7 +12,7 @@ package core
 		 * Hey，这是一个神奇的类，通过它可以自动清空添加到 AisyAutoClear 里的所有 IClear
 		 * aisy 内的所有 IClear 类都在 clear 接口中调用了 AisyAutoClear.remove(this) 来将自己从 AisyAutoClear 里移除
 		 * 但是 aisy 内的所有 IClear 类都没有自动把自己 put 到 AisyAutoClear 中，所以 AisyAutoClear.remove(this) 实际上是不会起作用的
-		 * 不过 aisy_ui 中的后缀为 UI（之后提到的所有 UI 皆指此） 的 ICear 都自动把自己 put 到了最上层的 AisyAutoClear （程序中不会只有一个 AisyAutoClear，
+		 * 不过 aisy_ui 中的后缀为 UI 的 ICear 都自动把自己 put 到了最上层的 AisyAutoClear （程序中不会只有一个 AisyAutoClear，
 		 * 所以这是栈结构，AisyAutoClear 之间没有父子关系，都是平级的，只不过永远有一个在最上层而已） 中，
 		 * 如果当程序中用到 UI 的话，请在实例化 UI 之前，使用 AisyAutoClear.newAutoClear() 来创建一个 AisyAutoClear（声名为全局变量，以便在 clear 中清空）
 		 * 注意：AisyAutoClear 中的静态 clear 方法会调用所有的创建出来的 AisyAutoClear 对象的 clear 方法
@@ -20,6 +20,14 @@ package core
 		 */
 		protected var _autoClear:AisyAutoClear;
 		
+		/**
+		 * 
+		 * 提醒一下：
+		 * dataLoader 继承 URLLoader
+		 * dataStream 继承 URLStream
+		 * 这两个都实现了 IClear，所以可以通过 clear 删除侦听
+		 * 
+		 */
 		public function Main()
 		{
 //			不要忘啦

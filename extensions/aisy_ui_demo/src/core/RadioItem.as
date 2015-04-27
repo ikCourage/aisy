@@ -7,7 +7,7 @@ package core
 
 	/**
 	 * 
-	 * 通过继承 ListyItem 来简化对 NAME，index，itemInfo 的声明和清空
+	 * Hey，通过继承 ListyItem 来简化对 NAME，index，itemInfo 的声明和清空
 	 * 
 	 * @author Viqu
 	 * 

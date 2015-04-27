@@ -26,8 +26,7 @@ package core
 		
 		protected function init():void
 		{
-//			提示：因为 RadioItem 里会创建 AisyAutoClear，所以此 _autoClear 只作用于 bgMc
-//			可以通过 AisyAutoClear.setCurrentAutoClear 来将 _autoClear 重新指定到最上层（如果需要的话，一般情况是不需要的）
+//			注意：因为 RadioItem 里会创建 AisyAutoClear，所以此 _autoClear 只作用于 bgMc
 			_autoClear = AisyAutoClear.newAutoClear();
 			__initBgMc();
 			__initRadioList();
@@ -69,13 +68,13 @@ package core
 		
 		/**
 		 * 
-		 * 添加了侦听，但是不需要手动的删除，因为 clear 会删除所有的
+		 * 添加了侦听，但是不需要手动的删除，以为 clear 会删除所有的
 		 * 注意：这里的这个侦听是加在 IClear 上的，如果不是（普通 MovieClip、SimpleButton、TextField 等），需要手动删除
 		 * 
 		 */
 		protected function __addEvent():void
 		{
-//			mc_btn 也是 UMovieClip，并且使用了 AisyAutoClear 所以不需要手动清空侦听
+//			mc_btn 也是 UMovieClip，并且我们使用了 AisyAutoClear 所以不需要手动清空侦听
 			bgMc.mc_btn.addEventListener(MouseEvent.CLICK, __mcBtnHandler);
 		}
 		
