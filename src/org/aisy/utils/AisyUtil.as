@@ -10,40 +10,25 @@ package org.aisy.utils
 	 * @author Viqu
 	 * 
 	 */
-	public class AisyUtils
+	public class AisyUtil
 	{
 		/**
 		 * 是否为桌面环境
 		 */
-		static protected var _isDestop:Boolean;
-		if (true) {
-			try {
-				getDefinitionByName("flash.filesystem.File");
-				_isDestop = true;
-			} catch (error:Error) {}
-		}
+		static public var isDestop:Boolean;
+		try {
+			getDefinitionByName("flash.filesystem.File");
+			isDestop = true;
+		} catch (error:Error) {}
 		
-		public function AisyUtils()
+		public function AisyUtil()
 		{
 		}
 		
 		/**
-		 * 
-		 * 是否为桌面环境
-		 * @return 
-		 * 
-		 */
-		static public function get isDestop():Boolean
-		{
-			return _isDestop;
-		}
-		
-		/**
-		 * 
 		 * 返回对象副本
 		 * @param obj
 		 * @return 
-		 * 
 		 */
 		static public function cloneObjectByByteArray(obj:*):*
 		{
