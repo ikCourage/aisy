@@ -4,6 +4,7 @@ package org.aisy.radio
 	
 	import org.ais.event.TEvent;
 	import org.aisy.button.Button;
+	import org.aisy.skin.AisySkin;
 
 	/**
 	 * 
@@ -37,24 +38,23 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 初始化
-		 * 
 		 */
-		protected function init():void
+		override protected function init():void
 		{
+			if (AisySkin.RADIO_AUTO_SKIN === true) {
+				setSkinName(AisySkin.RADIO_SKIN);
+			}
 			addEventListener(MouseEvent.CLICK, mouseClickHandler);
 		}
 		
 		/**
-		 * 
 		 * MOUSE_CLICK 侦听
-		 * 
 		 */
 		protected function mouseClickHandler(e:MouseEvent):void
 		{
 			if (_selected === true) return;
-			setClassName(_skinName + 1);
+			setSkinClassName(_skinName + 1);
 			getSkin().gotoAndStop(2);
 			_selected = true;
 			TEvent.trigger(NAME, "RADIO", {"name": NAME, "index": index, "selected": _selected, "obj": this});
@@ -62,12 +62,9 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 全局侦听
-		 * 
 		 * @param type
 		 * @param data
-		 * 
 		 */
 		protected function __triggerHandler(type:String, data:* = null):void
 		{
@@ -75,7 +72,7 @@ package org.aisy.radio
 				case "RADIO":
 					if (NAME !== data.name) return;
 					if (_selected === true && this !== data.obj) {
-						setClassName(_skinName + 0);
+						setSkinClassName(_skinName + 0);
 						_selected = false;
 					}
 					break;
@@ -85,25 +82,19 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 设置皮肤 （类名）
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setSkinName(value:String):void
 		{
 			_skinName = value;
-			setClassName(value + 0);
+			setSkinClassName(value + 0);
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 设置 是否选中
-		 * 
 		 * @param value
-		 * 
 		 */
 		override public function setSelected(value:Boolean):void
 		{
@@ -112,11 +103,8 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 返回 是否选中
-		 * 
 		 * @return 
-		 * 
 		 */
 		override public function getSelected():Boolean
 		{
@@ -124,11 +112,8 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 设置名字
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function set NAME(value:String):void
 		{
@@ -139,11 +124,8 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 返回名字
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function get NAME():String
 		{
@@ -152,11 +134,8 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 设置索引
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function set index(value:uint):void
 		{
@@ -164,11 +143,8 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 返回索引
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function get index():uint
 		{
@@ -176,9 +152,7 @@ package org.aisy.radio
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

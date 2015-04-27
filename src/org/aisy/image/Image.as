@@ -29,42 +29,55 @@ package org.aisy.image
 		 * 是否跨域
 		 */
 		static public var isCrossDomain:Boolean;
+		protected var _isCrossDomain:Boolean;
 		/**
 		 * Loader
 		 */
-		protected var __loader:Loader;
+		protected var _loader:Loader;
+		/**
+		 * SwfLoader
+		 */
+		protected var _swfLoader:SwfLoader;
 		/**
 		 * 进度背景
 		 */
-		protected var __loading:DisplayObject;
+		protected var _loading:DisplayObject;
+		/**
+		 * 载入成功回调函数
+		 */
+		protected var _completeF:Function;
+		/**
+		 * IoError 回调函数
+		 */
+		protected var _ioErrorF:Function;
 		/**
 		 * 是否载入成功
 		 */
-		protected var isLoaded:Boolean;
+		protected var _isLoaded:Boolean;
 		/**
 		 * 是否已清空
 		 */
-		protected var isClear:Boolean;
+		protected var _isClear:Boolean;
 		/**
 		 * 是否平滑
 		 */
 		protected var _smoothing:Boolean;
 		/**
-		 * 载入成功回调函数
-		 */
-		protected var __completeF:Function;
-		/**
-		 * IoError 回调函数
-		 */
-		protected var __ioErrorF:Function;
-		/**
 		 * 自定义宽度
 		 */
-		protected var _width:Number;
+		protected var _width:Number = 0;
 		/**
 		 * 自定义高度
 		 */
-		protected var _height:Number;
+		protected var _height:Number = 0;
+		/**
+		 * loading 的最小尺寸
+		 */
+		protected var _loadingMinSize:Number = AisySkin.IMAGE_LOADING_MIN_SIZE;
+		/**
+		 * loading 的最大尺寸
+		 */
+		protected var _loadingMaxSize:Number = AisySkin.IMAGE_LOADING_MAX_SIZE;
 		
 		public function Image(request:Object = null, context:LoaderContext = null, loading:DisplayObject = null)
 		{
@@ -75,170 +88,154 @@ package org.aisy.image
 		}
 		
 		/**
-		 * 
 		 * 加载图片
-		 * 
-		 * @param url
+		 * @param request
+		 * @param context
 		 * @param loading
-		 * 
 		 */
 		public function load(request:Object, context:LoaderContext = null, loading:DisplayObject = null):void
 		{
-			__loading = null;
+			_isClear = false;
+			_isLoaded = false;
 			if (null === request) return;
-			if (null === loading) {
-				__loading = new (getDefinitionByName(AisySkin.IMAGE_SKIN) as Class)();
-			}
-			else {
-				__loading = loading;
-			}
-			addChild(__loading);
-			
-			var swfLoader:SwfLoader = new SwfLoader();
-			swfLoader.setComplete(completeHandler);
-			swfLoader.setIoError(ioErrorHandler);
-			swfLoader.load(request, context);
-			
-			swfLoader = null;
+			initLoading(loading);
+			if (null !== _swfLoader) _swfLoader.clear();
+			_swfLoader = new SwfLoader();
+			_swfLoader.setIsCrossDomain(isCrossDomain || _isCrossDomain);
+			_swfLoader.setComplete(__completeHandler);
+			_swfLoader.setIoError(__ioErrorHandler);
+			_swfLoader.load(request, context);
 			request = null;
 			context = null;
 			loading = null;
 		}
 		
 		/**
-		 * 
 		 * 从 ByteArray 对象中所存储的二进制数据中加载
-		 * 
 		 * @param bytes
 		 * @param context
-		 * 
+		 * @param loading
 		 */
-		public function loadBytes(bytes:ByteArray, context:LoaderContext = null):void
+		public function loadBytes(bytes:ByteArray, context:LoaderContext = null, loading:DisplayObject = null):void
 		{
-			var swfLoader:SwfLoader = new SwfLoader();
-			swfLoader.setComplete(completeHandler);
-			swfLoader.setIoError(ioErrorHandler);
-			swfLoader.loadBytes(bytes, context);
-			swfLoader = null;
+			_isClear = false;
+			_isLoaded = false;
+			initLoading(loading);
+			if (null !== _swfLoader) _swfLoader.clear();
+			_swfLoader = new SwfLoader();
+			_swfLoader.setIsCrossDomain(isCrossDomain || _isCrossDomain);
+			_swfLoader.setComplete(__completeHandler);
+			_swfLoader.setIoError(__ioErrorHandler);
+			_swfLoader.loadBytes(bytes, context);
 			bytes = null;
 			context = null;
+			loading = null;
 		}
 		
 		/**
-		 * 
 		 * 载入成功 侦听
-		 * 
 		 * @param loader
-		 * 
+		 * @param e
 		 */
-		protected function completeHandler(loader:Loader, e:Event):void
+		protected function __completeHandler(loader:Loader, e:Event):void
 		{
-			if (isCrossDomain) {
-				if (!loader.contentLoaderInfo.sameDomain) {
-					var b:ByteArray = loader.contentLoaderInfo.bytes;
-					loader.unload();
-					loadBytes(b, new LoaderContext());
-					b = null;
-					loader = null;
-					e = null;
-					return;
-				}
-			}
-			isLoaded = true;
-			if (true === isClear) {
+			_swfLoader = null;
+			__completeHandler2(loader, e);
+			loader = null;
+			e = null;
+		}
+		
+		protected function __completeHandler2(loader:Loader, e:Event):void
+		{
+			_isLoaded = true;
+			if (_isClear === true) {
 				loader.unload();
 				loader = null;
 				e = null;
 				Memory.clear();
 				return;
 			}
-			
-			var obj:*;
-			while (numChildren) {
-				obj = getChildAt(0);
-				if (obj is IClear) obj.clear();
-				else removeChildAt(0);
-			}
-			obj = null;
-			__loading = null;
-			
-			__loader = loader;
-			addChild(__loader.content);
-			
+			clearView();
+			_loader = loader;
+			var bitmap:Bitmap = (_loader.content is Bitmap ? _loader.content : DisplayObjectContainer(_loader.content).numChildren !== 0 ? DisplayObjectContainer(_loader.content).getChildAt(0) : null) as Bitmap;
+			addChildAt(null !== bitmap ? bitmap : _loader.content, 0);
+			_loader.unload();
 			__setSize();
-			
-			if (null !== __completeF) {
-				__completeF.apply(null, [this, loader, e].slice(0, __completeF.length));
-				__completeF = null;
-				__ioErrorF = null;
-			}
-			
+			if (null !== _completeF) _completeF.apply(null, [this, e, _loader].slice(0, _completeF.length));
+			_completeF = null;
+			_ioErrorF = null;
+			bitmap = null;
 			loader = null;
 			e = null;
 		}
 		
 		/**
-		 * 
 		 * IoError 侦听
-		 * 
 		 * @param e
-		 * 
 		 */
-		protected function ioErrorHandler(e:IOErrorEvent):void
+		protected function __ioErrorHandler(e:IOErrorEvent):void
 		{
-			if (null !== __ioErrorF) {
-				__ioErrorF.apply(null, [e].slice(0, __ioErrorF.length));
+			_swfLoader = null;
+			if (null !== _ioErrorF) {
+				_ioErrorF.apply(null, [this, e].slice(0, _ioErrorF.length));
 			}
-			e = null;
 			clear();
 			Memory.clear();
+			e = null;
 		}
 		
 		/**
-		 * 
+		 * 初始化 loading
+		 * @param loading
+		 */
+		protected function initLoading(loading:DisplayObject):void
+		{
+			clearView();
+			if (AisySkin.IMAGE_AUTO_SKIN === true && null === loading) {
+				_loading = new (getDefinitionByName(AisySkin.IMAGE_SKIN) as Class)();
+			}
+			else {
+				_loading = loading;
+			}
+			if (null !== _loading) {
+				addChild(_loading);
+				__setSize();
+			}
+			loading = null;
+		}
+		
+		/**
 		 * 自适应大小
-		 * 
 		 */
 		protected function __setSize():void
 		{
-			if (_smoothing === true) setSmoothing(true);
-			
-			var max:Number = 70;
-			var i:uint, len:uint = numChildren;
-			var obj:*;
-			for (i = 0; i < len; i++) {
+			var len:uint = numChildren;
+			if (len === 0) return;
+			setSmoothing(_smoothing);
+			var obj:DisplayObject = getChildAt(0);
+			var w:Number = _width !== 0 ? _width : obj.width;
+			var h:Number = _height !== 0 ? _height : obj.height;
+			for (var i:uint = 0; i < len; i++) {
 				obj = getChildAt(i);
-				if (obj !== __loading) {
-					obj.width = _width;
-					obj.height = _height;
+				if (obj !== _loading) {
+					obj.width = w;
+					obj.height = h;
 				}
 			}
-			obj = null;
-			
-			if (null === __loading) return;
-			
-			if (_width < max || _height < max) {
-				max = Math.min(_width, _height);
+			if (null !== _loading) {
+				var loadingSize:Number = Math.max(Math.min(w, h), _loadingMinSize);
+				loadingSize = Math.min(loadingSize, _loadingMaxSize);
+				_loading.width = _loading.height = loadingSize;
+				_loading.x = w > loadingSize ? (w - loadingSize) >> 1 : 0;
+				_loading.y = h > loadingSize ? (h - loadingSize) >> 1 : 0;
 			}
-			
-			__loading.width = __loading.height = max;
-			__loading.x = (_width - max) * 0.5;
-			__loading.y = (_height - max) * 0.5;
-		}
-		
-		protected function getBitmap():Bitmap
-		{
-			if (null === __loader) return null;
-			return (__loader.content is Bitmap ? __loader.content : DisplayObjectContainer(__loader.content).getChildAt(0)) as Bitmap;
+			obj = null;
 		}
 		
 		/**
-		 * 
 		 * 设置坐标
-		 * 
 		 * @param x
 		 * @param y
-		 * 
 		 */
 		public function setXY(x:Number = 0, y:Number = 0):void
 		{
@@ -247,13 +244,10 @@ package org.aisy.image
 		}
 		
 		/**
-		 * 
 		 * 设置大小
-		 * 
 		 * @param width
 		 * @param height
 		 * @param smoothing
-		 * 
 		 */
 		public function setSize(width:Number = 0, height:Number = 0, smoothing:Boolean = false):void
 		{
@@ -264,70 +258,136 @@ package org.aisy.image
 		}
 		
 		/**
-		 * 
-		 * 设置 是否平滑
-		 * 
-		 * @param smoothing
-		 * 
+		 * 设置 loading 的最大尺寸
+		 * @param value
 		 */
-		public function setSmoothing(smoothing:Boolean = false):void
+		public function setLoadingMinSize(value:Number):void
 		{
-			_smoothing = smoothing;
-			if (_smoothing === true && null !== __loader) {
-				var bitmap:Bitmap = getBitmap();
-				if (null !== bitmap) bitmap.smoothing = true;
+			_loadingMinSize = value;
+		}
+		
+		/**
+		 * 设置 loading 的最大尺寸
+		 * @param value
+		 */
+		public function setLoadingMaxSize(value:Number):void
+		{
+			_loadingMaxSize = value;
+		}
+		
+		/**
+		 * 设置 是否平滑
+		 * @param smoothing
+		 */
+		public function setSmoothing(value:Boolean = false):void
+		{
+			_smoothing = value;
+			var bitmap:Bitmap = getBitmap();
+			if (null !== bitmap) {
+				bitmap.smoothing = _smoothing;
 				bitmap = null;
 			}
 		}
 		
 		/**
-		 * 
 		 * 载入成功回调
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setComplete(value:Function):void
 		{
-			if (true === isLoaded) value.apply(null, [this, __loader].slice(0, value.length));
-			else __completeF = value;
+			if (true === _isLoaded) {
+				if (null !== value) {
+					value.apply(null, [this, null, _loader].slice(0, value.length));
+				}
+				_completeF = null;
+				_ioErrorF = null;
+			}
+			else _completeF = value;
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * IoError 回调
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setIoError(value:Function):void
 		{
-			__ioErrorF = value;
+			_ioErrorF = value;
 			value = null;
 		}
 		
 		/**
-		 * 
+		 * 设置 是否跨域
+		 * @param value
+		 */
+		public function setIsCrossDomain(value:Boolean):void
+		{
+			_isCrossDomain = value;
+		}
+		
+		/**
+		 * 返回 是否跨域
+		 * @return 
+		 */
+		public function getIsCrossDomain():Boolean
+		{
+			return _isCrossDomain;
+		}
+		
+		/**
+		 * 返回 Bitmap
+		 * @return
+		 */
+		public function getBitmap():Bitmap
+		{
+			if (numChildren === 0) return null;
+			return getChildAt(0) as Bitmap;
+		}
+		
+		override public function set width(value:Number):void
+		{
+			_width = value;
+			__setSize();
+		}
+		
+		override public function set height(value:Number):void
+		{
+			_height = value;
+			__setSize();
+		}
+		
+		/**
+		 * 清空显示
+		 */
+		public function clearView():void
+		{
+			var i:uint = numChildren, obj:*;
+			while (i) {
+				i--;
+				obj = getChildAt(i);
+				if (obj is IClear) obj.clear();
+				else removeChildAt(i);
+			}
+			obj = null;
+			_loading = null;
+		}
+		
+		/**
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{
-			isClear = true;
-			if (null !== __loader) {
-				var bitmap:Bitmap = getBitmap();
-				if (null !== bitmap) bitmap.bitmapData.dispose();
-				__loader.unload();
-				__loader = null;
-				bitmap = null;
+			_isClear = true;
+			_width = _height = 0;
+			if (null !== _swfLoader) {
+				_swfLoader.clear();
+				_swfLoader = null;
 			}
-			
-			__loading = null;
-			__completeF = null;
-			__ioErrorF = null;
-			
 			super.clear();
+			_loader = null;
+			_loading = null;
+			_completeF = null;
+			_ioErrorF = null;
 		}
 		
 	}

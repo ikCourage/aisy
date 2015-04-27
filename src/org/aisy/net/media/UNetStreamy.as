@@ -7,7 +7,6 @@ package org.aisy.net.media
 	import flash.net.NetConnection;
 	import flash.net.URLRequest;
 	import flash.utils.ByteArray;
-	import flash.utils.getTimer;
 	
 	import org.ais.event.TEvent;
 	import org.ais.system.Memory;
@@ -136,7 +135,7 @@ package org.aisy.net.media
 		
 		public function UNetStreamy(connection:NetConnection, peerID:String = "connectToFMS")
 		{
-			NAME = getTimer() + "" + Math.random();
+			NAME = Math.random().toString();
 			super(connection, peerID);
 			init();
 			connection = null;
@@ -144,9 +143,7 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 初始化
-		 * 
 		 */
 		protected function init():void
 		{
@@ -165,6 +162,9 @@ package org.aisy.net.media
 			
 			addEventListener(NetStatusEvent.NET_STATUS, __netStatusHandler);
 		}
+		
+//		***************************
+//		client
 		
 		protected function onCuePoint(data:*):void
 		{
@@ -214,11 +214,19 @@ package org.aisy.net.media
 			data = null;
 		}
 		
+//		client
+//		***************************
+		
+//		***************************
+//		event
+		
 		protected function __netStatusHandler(e:NetStatusEvent):void
 		{
 			switch (e.info.code) {
 				case "NetStream.Play.Stop":
 					break;
+//				case "NetStream.Play.Start":
+//					break;
 				case "NetStream.Seek.Notify":
 					super.bufferTime = 0;
 					if (_seekType === 0) return;
@@ -247,10 +255,14 @@ package org.aisy.net.media
 			e = null;
 		}
 		
+//		event
+//		***************************
+		
+//		***************************
+//		stream
+		
 		/**
-		 * 
 		 * 自动加载数据
-		 * 
 		 */
 		protected function __autoLoad():void
 		{
@@ -270,10 +282,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 当前流加载进度
 		 * @param e
-		 * 
 		 */
 		protected function __dStreamProgress0(e:ProgressEvent):void
 		{
@@ -303,6 +313,11 @@ package org.aisy.net.media
 							if (rLen > bLen) rLen = 0;
 							b1.clear();
 							b1.writeBytes(b, 0, rLen);
+//							b1.writeBytes(_arrayByte.get(_mergeIndex).toByteArray());
+//							__deleteByte(_mergeIndex);
+//							_arrayByte.get(index).writeBytes(b1);
+//							
+//							if (index === _seekIndex) appendBytes(b1);
 							
 							ubLen = _arrayByte.get(_mergeIndex).length;
 							rLen = 1024 << 12;
@@ -322,6 +337,7 @@ package org.aisy.net.media
 							
 							b1.clear();
 							
+//							__deleteByte(_mergeIndex);
 							if (isAutoLoad === true) __autoLoad();
 							break;
 						}
@@ -342,10 +358,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 当前流加载进度（计算文件头）（临时）
 		 * @param e
-		 * 
 		 */
 		protected function __dStreamProgress1(e:ProgressEvent):void
 		{
@@ -370,10 +384,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 当前流加载完成
 		 * @param e
-		 * 
 		 */
 		protected function __dStreamComplete(e:Event):void
 		{
@@ -385,10 +397,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 当前流加载错误
 		 * @param e
-		 * 
 		 */
 		protected function __dStreamIOError(e:IOErrorEvent):void
 		{
@@ -398,10 +408,14 @@ package org.aisy.net.media
 			e = null;
 		}
 		
+//		stream
+//		***************************
+		
+//		***************************
+//		a
+		
 		/**
-		 * 
 		 * 根据关键点播放已缓存流
-		 * 
 		 */
 		protected function __seekByPoint():void
 		{
@@ -425,6 +439,23 @@ package org.aisy.net.media
 			
 			_curFPindex = _metaData.keyframes.filepositions.lastIndexOf(_curFPosition) - 1;
 			
+//			var maxLen:uint = _arrayByte.get(_seekIndex).length;
+//			var len:uint = 1024 * 1024 * 30;
+//			var th:UNetStreamy = this;
+//			var uTimer:UTimer = new UTimer();
+//			uTimer.setDelay(0);
+//			uTimer.setTimer(function ():void
+//			{
+//				th["appendBytes"](_arrayByte.get(_seekIndex).toByteArray(_cfp, _cfp + len > maxLen ? 0 : len));
+//				_cfp += len;
+//				if (_cfp + len >= maxLen) {
+//					uTimer.clear();
+//					uTimer = null;
+//					th = null;
+//				}
+//			});
+//			uTimer.start();
+			
 			var tp:uint = _arrayByte.get(_seekIndex).position;
 			_arrayByte.get(_seekIndex).position = _cfp;
 			
@@ -441,15 +472,20 @@ package org.aisy.net.media
 			
 			_arrayByte.get(_seekIndex).position = tp;
 			
+//			appendBytes(_arrayByte.get(_seekIndex).toByteArray(_cfp));
+			
+//			var b:ByteArray = new ByteArray();
+//			b.writeBytes(_arrayByte.get(_seekIndex).toByteArray(_cfp));
+//			
+//			appendBytes(b);
+//			
 			b.clear();
 			b = null;
 			arr = null;
 		}
 		
 		/**
-		 * 
 		 * 根据关键点加载播放流
-		 * 
 		 */
 		protected function __seekByPoint2():void
 		{
@@ -486,10 +522,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 加载数据
 		 * @param request
-		 * 
 		 */
 		protected function load2(request:Object):void
 		{
@@ -518,12 +552,10 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 拖放加载回调处理函数
 		 * @param request
 		 * @param p
 		 * @return 
-		 * 
 		 */
 		protected function __checkURLF(request:Object, type:int = 0, p:uint = 0):URLRequest
 		{
@@ -536,10 +568,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 搜索将要合并的数据索引
 		 * @param v
-		 * 
 		 */
 		protected function __searchIndex(v:Number):void
 		{
@@ -562,10 +592,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 删除索引为 i 的所有数据
 		 * @param i
-		 * 
 		 */
 		protected function __deleteByte(i:uint):void
 		{
@@ -581,9 +609,7 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 清空所有数据
-		 * 
 		 */
 		protected function clearData():void
 		{
@@ -597,6 +623,9 @@ package org.aisy.net.media
 			_URLRequest = null;
 		}
 		
+//		a
+//		***************************
+		
 		override public function set bufferTime(bufferTime:Number):void
 		{
 			_bufferTime = bufferTime;
@@ -604,10 +633,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回当前 URLRequest
 		 * @return 
-		 * 
 		 */
 		public function getURLRequest():URLRequest
 		{
@@ -615,10 +642,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回当前播放时间
 		 * @return 
-		 * 
 		 */
 		public function getTime():Number
 		{
@@ -626,10 +651,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回当前数据加载进度
 		 * @return 
-		 * 
 		 */
 		public function getBytesLoaded():uint
 		{
@@ -638,10 +661,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回当前数据大小
 		 * @return 
-		 * 
 		 */
 		public function getBytesTotal():uint
 		{
@@ -654,10 +675,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回当前数据加载进度（百分比）
 		 * @return 
-		 * 
 		 */
 		public function getLoadProgress():Number
 		{
@@ -670,10 +689,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回当前播放进度（百分比）
 		 * @return 
-		 * 
 		 */
 		public function getPlayProgress():Number
 		{
@@ -686,10 +703,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回字节数据数组
 		 * @return 
-		 * 
 		 */
 		public function getArrayByte():ArrayByte
 		{
@@ -697,13 +712,11 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回完整字节数据数组
 		 * 当 sort = false 时返回未排序数组
 		 * 当 sort = true 时返回排序数组
 		 * @param sort
 		 * @return 
-		 * 
 		 */
 		public function getArrayByteFull(sort:Boolean = false):Array
 		{
@@ -740,10 +753,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回文件头数组
 		 * @return 
-		 * 
 		 */
 		public function getFileHeadArr():ArrayByte
 		{
@@ -751,10 +762,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回元数据
 		 * @return 
-		 * 
 		 */
 		public function getMetaData():MetaData
 		{
@@ -762,10 +771,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回每个数据的关键点数组
 		 * @return 
-		 * 
 		 */
 		public function getSeekPointArr():Array
 		{
@@ -773,10 +780,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 返回每个数据的关键时间数组
 		 * @return 
-		 * 
 		 */
 		public function getTimePointArr():Array
 		{
@@ -784,10 +789,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 设置拖放索引
 		 * @param value
-		 * 
 		 */
 		public function set seekIndex(value:uint):void
 		{
@@ -816,14 +819,12 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 拖放流
 		 * 当 type = 0 时，同 seek
 		 * 当 type = 1 时，拖放已缓存数据
 		 * 当 type = 2 时，根据关键点加载数据
 		 * @param offset
 		 * @param type
-		 * 
 		 */
 		public function seekByPoint(offset:Number, type:int = 1):void
 		{
@@ -843,10 +844,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 设置当前播放点开始时间
 		 * @param value
-		 * 
 		 */
 		public function setCurrentFTime(value:Number):void
 		{
@@ -854,10 +853,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 设置检查 URL 回调函数
 		 * @param value
-		 * 
 		 */
 		public function setCheckURL(value:Function = null):void
 		{
@@ -867,11 +864,9 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 添加 client 侦听
 		 * @param type
 		 * @param listener
-		 * 
 		 */
 		public function addClientEvent(type:String, listener:Function):void
 		{
@@ -881,11 +876,9 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 添加流侦听
 		 * @param type
 		 * @param listener
-		 * 
 		 */
 		public function addStreamEvent(type:String, listener:Function):void
 		{
@@ -895,10 +888,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 裁剪数据
 		 * @param i
-		 * 
 		 */
 		public function cutByte(i:uint):void
 		{
@@ -924,6 +915,9 @@ package org.aisy.net.media
 			if (len === 0 || len >= uByteLen) return;
 			var ub:UByteArray = new UByteArray();
 			var b:ByteArray = new ByteArray();
+//			b.writeBytes(_arrayByte.get(i).toByteArray(0, len));
+//			_arrayByte.get(i).clear();
+//			_arrayByte.get(i).writeBytes(b);
 			
 			var rLen:uint = 1024 << 12;
 			_arrayByte.get(i).position = 0;
@@ -942,10 +936,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 加载数据
 		 * @param request
-		 * 
 		 */
 		public function load(request:Object):void
 		{
@@ -1003,10 +995,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 加载播放数据
 		 * @param request
-		 * 
 		 */
 		public function playURL(request:Object):void
 		{
@@ -1021,9 +1011,7 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 清空流
-		 * 
 		 */
 		public function clearStream():void
 		{
@@ -1034,9 +1022,7 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

@@ -35,9 +35,7 @@ package org.aisy.listoy
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

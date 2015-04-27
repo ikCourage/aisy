@@ -32,7 +32,6 @@ package org.aisy.net.media.data
 		
 		public function MetaData()
 		{
-			
 		}
 		
 		public function setData(data:*):void

@@ -18,6 +18,10 @@ package org.aisy.net.media
 	public class UNetGroup extends NetGroup implements IClear
 	{
 		/**
+		 * 动态数据
+		 */
+		protected var __dynamic:*;
+		/**
 		 * 侦听数组
 		 */
 		protected var __uListener:UListener;
@@ -27,6 +31,25 @@ package org.aisy.net.media
 			super(connection, groupspec);
 			connection = null;
 			groupspec = null;
+		}
+		
+		/**
+		 * 设置动态数据
+		 * @param value
+		 */
+		public function set dynamic(value:*):void
+		{
+			__dynamic = value;
+			value = null;
+		}
+		
+		/**
+		 * 返回动态数据
+		 * @return 
+		 */
+		public function get dynamic():*
+		{
+			return __dynamic;
 		}
 		
 		override public function addEventListener(type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false):void
@@ -49,11 +72,8 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 清空侦听
-		 * 
 		 * @param type
-		 * 
 		 */
 		public function clearEventListener(type:String = null):void
 		{
@@ -61,12 +81,14 @@ package org.aisy.net.media
 			var i:uint, len:uint, j:String, listeners:Array, v:Array, ls:Array = __uListener.getListeners();
 			if (null !== type) {
 				listeners = ls[type];
-				len = listeners.length;
-				for (i = 0; i < len; i++) {
-					v = listeners[i];
-					super.removeEventListener(type, v[0], v[1]);
+				if (null !== listeners) {
+					len = listeners.length;
+					for (i = 0; i < len; i++) {
+						v = listeners[i];
+						super.removeEventListener(type, v[0], v[1]);
+					}
+					__uListener.clearEventListener(type);
 				}
-				__uListener.clearEventListener(type);
 			}
 			else {
 				for (j in ls) {
@@ -95,15 +117,14 @@ package org.aisy.net.media
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{
 			AisyAutoClear.remove(this);
 			close();
 			clearEventListener();
+			__dynamic = null;
 		}
 		
 	}

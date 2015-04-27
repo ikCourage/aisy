@@ -62,9 +62,7 @@ package  org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{

@@ -5,7 +5,7 @@ package org.aisy.net.data
 	
 	import org.aisy.autoclear.AisyAutoClear;
 	import org.aisy.interfaces.IClear;
-	import org.aisy.utils.AisyUtils;
+	import org.aisy.utils.AisyUtil;
 
 	/**
 	 * 
@@ -25,16 +25,14 @@ package org.aisy.net.data
 		protected var _bufferMax:uint;
 
 		/**
-		 * 
 		 * 0: 自动, 1: ByteArray, !1: 文件
 		 * @param type
-		 * 
 		 */
 		public function UByteArray(type:int = 0)
 		{
 			switch (type) {
 				case 0:
-					_isDestop = AisyUtils.isDestop;
+					_isDestop = AisyUtil.isDestop;
 					break;
 				default:
 					_isDestop = type === 1 ? false : true;
@@ -54,6 +52,7 @@ package org.aisy.net.data
 		{
 			AisyAutoClear.remove(this);
 			if (_isDestop === true) {
+//				flushData();
 				if (null != _tmpFileStream) _tmpFileStream.close();
 				if (null != _tmpFile) _tmpFile.cancel();
 				FileTemp.clearByOwner(this);
@@ -273,6 +272,18 @@ package org.aisy.net.data
 		{
 			return _isDestop === true ? tmpFileOp("propertyIsEnumerable", V) : super.propertyIsEnumerable(V);
 		}
+		
+		/*public function setPropertyIsEnumerable(name:String, isEnum:Boolean=true):void
+		{
+			// TODO Auto Generated method stub
+			super.setPropertyIsEnumerable(name, isEnum);
+		}
+		
+		public function valueOf():Object
+		{
+			// TODO Auto Generated method stub
+			return super.valueOf();
+		}*/
 		
 		public function getBufferMax():uint
 		{

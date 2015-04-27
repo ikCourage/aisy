@@ -6,6 +6,7 @@ package org.aisy.button
 	
 	import org.ais.system.Ais;
 	import org.aisy.display.USprite;
+	import org.aisy.interfaces.IClear;
 	import org.aisy.skin.AisySkin;
 	import org.aisy.textview.TextView;
 
@@ -25,15 +26,23 @@ package org.aisy.button
 		
 		public function Button()
 		{
+			init();
 		}
 		
 		/**
-		 * 
+		 * 初始化
+		 */
+		protected function init():void
+		{
+			if (AisySkin.BUTTON_AUTO_SKIN === true) {
+				setSkinClassName(AisySkin.BUTTON_SKIN);
+			}
+		}
+		
+		/**
 		 * 计算布局
-		 * 
 		 * @param width
 		 * @param height
-		 * 
 		 */
 		protected function __layout(width:Number = 0, height:Number = 0):void
 		{
@@ -41,18 +50,20 @@ package org.aisy.button
 			var h:Number = Math.max(getData().height, getData().textView.height);
 			w = width !== 0 ? width : w;
 			h = height !== 0 ? height : h;
-			w += 10;
-			h += 4;
-			getData().skin.width = w;
-			getData().skin.height = h;
-			getData().textView.x = (w - getData().textView.width) * 0.5;
-			getData().textView.y = (h - getData().textView.height) * 0.5;
+//			w += 10;
+//			h += 4;
+			if (null !== getData().skin) {
+				getData().skin.width = w;
+				getData().skin.height = h;
+			}
+			if (null !== getData().textView) {
+				getData().textView.x = (w - getData().textView.width) >> 1;
+				getData().textView.y = (h - getData().textView.height) >> 1;
+			}
 		}
 		
 		/**
-		 * 
 		 * 注册事件
-		 * 
 		 */
 		protected function __addEvent():void
 		{
@@ -60,9 +71,7 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 移除事件
-		 * 
 		 */
 		protected function __removeEvent():void
 		{
@@ -70,11 +79,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 鼠标事件侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		protected function __mouseHandler(e:MouseEvent):void
 		{
@@ -84,7 +90,7 @@ package org.aisy.button
 				case MouseEvent.ROLL_OVER:
 					removeEventListener(e.type, __mouseHandler);
 					addEventListener(MouseEvent.ROLL_OUT, __mouseHandler);
-					if (AisySkin.USE_MOUSEDOWN === true && e.buttonDown === true && getData().mouse === 0) {
+					if (AisySkin.MOBILE === false && AisySkin.USE_MOUSEDOWN === true && e.buttonDown === true && getData().mouse === 0) {
 						getData().mouse = 1;
 						Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_UP, __stageHandler);
 						return;
@@ -106,7 +112,7 @@ package org.aisy.button
 					}
 					removeEventListener(e.type, __mouseHandler);
 					addEventListener(MouseEvent.ROLL_OVER, __mouseHandler);
-					if (AisySkin.USE_MOUSEDOWN === true && e.buttonDown === true && getData().mouse < 2) return;
+					if (AisySkin.MOBILE === false && AisySkin.USE_MOUSEDOWN === true && e.buttonDown === true && getData().mouse < 2) return;
 					removeEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
 					removeEventListener(MouseEvent.CLICK, __mouseHandler);
 					getData().skin.gotoAndStop(getData().selected === true ? 4 : (getData().mouse !== 0 ? 2 : 1));
@@ -128,7 +134,7 @@ package org.aisy.button
 		
 		protected function __stageHandler(e:MouseEvent):void
 		{
-			if (null === iData) return;
+			if (AisySkin.MOBILE === true || null === iData) return;
 			if (getData().mouse === 1) {
 				getData().mouse = 0;
 				Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_UP, __stageHandler);
@@ -146,11 +152,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 返回 数据对象
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getData():ButtonData
 		{
@@ -158,42 +161,36 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 皮肤 类名
-		 * 
 		 * @param value
-		 * 
 		 */
-		public function setClassName(value:String):void
+		public function setSkinClassName(value:String):void
 		{
-			setClass(getDefinitionByName(value) as Class);
+			setSkinClass(getDefinitionByName(value) as Class);
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 设置 皮肤 类
-		 * 
 		 * @param value
-		 * 
 		 */
-		public function setClass(value:Class):void
+		public function setSkinClass(value:Class):void
 		{
 			setSkin(new value());
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 设置 皮肤
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setSkin(value:Object):void
 		{
 			if (null === getData().skin) __addEvent();
-			else removeChild(getData().skin as DisplayObject);
+			else {
+				if (getData().skin is IClear) IClear(getData().skin).clear();
+				else removeChild(getData().skin as DisplayObject);
+			}
 			value.dynamic = {"mouseEnabled": false};
 			getData().skin = value;
 			getData().skin.gotoAndStop(getData().selected === true ? 4 : 1);
@@ -204,12 +201,9 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 大小
-		 * 
 		 * @param width
 		 * @param height
-		 * 
 		 */
 		public function setSize(width:Number = 0, height:Number = 0):void
 		{
@@ -217,11 +211,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 是否可用
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setEnabled(value:Boolean):void
 		{
@@ -230,11 +221,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 是否选中
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setSelected(value:Boolean):void
 		{
@@ -243,11 +231,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 显示文本
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setText(value:String):void
 		{
@@ -258,11 +243,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 ROLL_OVER 回调函数
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setRollOver(value:Function):void
 		{
@@ -271,11 +253,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 ROLL_OUT 回调函数
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setRollOut(value:Function):void
 		{
@@ -284,11 +263,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 MOUSE_DOWN 回调函数
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setMouseDown(value:Function):void
 		{
@@ -297,11 +273,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 设置 CLICK 回调函数
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setClick(value:Function):void
 		{
@@ -310,11 +283,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 返回 显示文字 TextView
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getTextView():TextView
 		{
@@ -323,11 +293,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 返回 皮肤
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getSkin():Object
 		{
@@ -335,11 +302,8 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 返回 是否选中
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getSelected():Boolean
 		{
@@ -347,9 +311,7 @@ package org.aisy.button
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

@@ -10,6 +10,7 @@ package org.aisy.upwindow
 	import org.ais.event.TEvent;
 	import org.ais.system.Ais;
 	import org.aisy.display.USprite;
+	import org.aisy.skin.AisySkin;
 
 	/**
 	 * 
@@ -37,6 +38,10 @@ package org.aisy.upwindow
 		 */
 		protected var _closeBtn:SimpleButton;
 		/**
+		 * 可以移动的区域
+		 */
+		protected var _moveRect:Rectangle;
+		/**
 		 * 宽度
 		 */
 		protected var _width:Number;
@@ -45,60 +50,63 @@ package org.aisy.upwindow
 		 */
 		protected var _height:Number;
 		/**
+		 * 拖动起始坐标
+		 */
+		protected var _mouseX:Number;
+		/**
+		 * 拖动起始坐标
+		 */
+		protected var _mouseY:Number;
+		/**
 		 * 是否可以移动
 		 */
 		protected var _isDrag:Boolean;
+		/**
+		 * 是否自动布局
+		 */
+		protected var _isLayout:Boolean;
 		/**
 		 * 鼠标是否按下
 		 */
 		protected var _isMouseDown:Boolean;
 		
-		public function UpWindow(num:uint, obj:DisplayObject, name:String, maskMode:uint = 0, showBg:Boolean = true, isDrag:Boolean = true, color:uint = 0x000000, alpha:Number = 0.7, closeAlpha:Number = 1, showClose:Boolean = true):void
+		public function UpWindow(num:uint, obj:DisplayObject, name:String, maskMode:uint = 0, showBg:Boolean = true, isDrag:Boolean = true, isLayout:Boolean = true, color:uint = 0x000000, alpha:Number = 0.7, closeAlpha:Number = 1, showClose:Boolean = true):void
 		{
 			NAME = name;
 			MASK_MODE = maskMode;
 			this.name = num.toString();
 			_isDrag = isDrag;
-			
+			_isLayout = isLayout;
 			init(obj, showBg, color, alpha, closeAlpha, showClose);
-			
 			obj = null;
 			name = null;
 		}
 		
 		/**
-		 * 
 		 * 初始化
-		 * 
 		 * @param obj
 		 * @param showBg
 		 * @param color
 		 * @param alpha
 		 * @param closeAlpha
 		 * @param showClose
-		 * 
 		 */
 		protected function init(obj:DisplayObject, showBg:Boolean, color:uint, alpha:Number, closeAlpha:Number, showClose:Boolean):void
 		{
-			_width = obj.width;
-			_height = obj.height;
-			
+			width = obj.width;
+			height = obj.height;
 			if (showBg === true) {
 				_bg = new Shape();
 				_bg.graphics.beginFill(color, alpha);
 				_bg.graphics.drawRoundRect(0, 0, obj.width + 20, obj.height + 20, 10, 10);
 				_bg.graphics.endFill();
 				addChild(_bg);
-				
 				obj.x = 10;
 				obj.y = 10;
-				
-				_width += 20;
-				_height += 20;
+				width += 20;
+				height += 20;
 			}
-			
 			addChild(obj);
-			
 			if (showClose === true) {
 				_closeBtn = new SimpleButton();
 				_closeBtn.upState = drawCloseBtn(0x666666);
@@ -108,65 +116,58 @@ package org.aisy.upwindow
 				_closeBtn.useHandCursor = false;
 				_closeBtn.alpha = closeAlpha;
 				addChild(_closeBtn);
+//				obj.y = 10;
 			}
-			
 			__addEvent();
 			__layout();
-			
 			obj = null;
 		}
 		
 		/**
-		 * 
 		 * 注册事件
-		 * 
 		 */
 		protected function __addEvent():void
 		{
 			if (_isDrag === true) addEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
 			if (null !== _closeBtn) _closeBtn.addEventListener(MouseEvent.CLICK, __closeBtnHandler);
-			
 			TEvent.newTrigger("UP_WINDOW_NEW", __triggerHandler);
 		}
 		
 		/**
-		 * 
 		 * 移除事件
-		 * 
 		 */
 		protected function __removeEvent():void
 		{
 			if (null !== _closeBtn) _closeBtn.removeEventListener(MouseEvent.CLICK, __closeBtnHandler);
-			
+			if (_isMouseDown === true) {
+				Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
+				Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
+			}
 			TEvent.removeTrigger("UP_WINDOW_NEW", __triggerHandler);
 		}
 		
 		/**
-		 * 
 		 * 计算布局
-		 * 
 		 */
 		protected function __layout():void
 		{
 			if (null !== _closeBtn) {
-				var obj:DisplayObject = getChildAt(_bg === null ? 0 : 1);
+				var obj:DisplayObject = getChildAt(null === _bg ? 0 : 1);
 				_closeBtn.x = obj.x + obj.width - 5;
 				_closeBtn.y = obj.y - 7;
 				obj = null;
 			}
-			
-			x = (Ais.IMain.stage.stageWidth - width) * 0.5;
-			y = (Ais.IMain.stage.stageHeight - height) * 0.5;
+			if (_isLayout === true) {
+				x = (Ais.IMain.stage.stageWidth - width) >> 1;
+				y = (Ais.IMain.stage.stageHeight - height) >> 1;
+			}
 		}
 		
 		/**
-		 * 
 		 * 绘制关闭按钮
-		 * 
 		 * @param color
 		 * @param alpha
 		 * @return 
-		 * 
 		 */
 		protected function drawCloseBtn(color:uint, alpha:Number = 1):Shape
 		{
@@ -184,11 +185,8 @@ package org.aisy.upwindow
 		}
 		
 		/**
-		 * 
 		 * 关闭按钮 侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		protected function __closeBtnHandler(e:MouseEvent):void
 		{
@@ -196,15 +194,23 @@ package org.aisy.upwindow
 		}
 		
 		/**
-		 * 
 		 * 鼠标事件 侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		protected function __mouseHandler(e:MouseEvent):void
 		{
 			switch (e.type) {
+				case MouseEvent.MOUSE_MOVE:
+					if (_isMouseDown === true) {
+						var _x:Number = Ais.IMain.stage.mouseX - _mouseX, _y:Number = Ais.IMain.stage.mouseY - _mouseY;
+						if (_x < _moveRect.x) _x = _moveRect.x;
+						else if (_x > _moveRect.width) _x = _moveRect.width;
+						if (_y < _moveRect.y) _y = _moveRect.y;
+						else if (_y > _moveRect.height) _y = _moveRect.height;
+						x = _x;
+						y = _y;
+					}
+					break;
 				case MouseEvent.MOUSE_DOWN:
 					if (parent.getChildAt(parent.numChildren - 1) !== this) {
 						parent.setChildIndex(this, parent.numChildren - 1);
@@ -214,23 +220,32 @@ package org.aisy.upwindow
 					if (e.target.hasOwnProperty("tabEnabled") === true && e.target.tabEnabled === true) return;
 					if (e.target.hasOwnProperty("dynamic") === true && e.target.dynamic && e.target.dynamic.hasOwnProperty("mouseEnabled") === true && e.target.dynamic.mouseEnabled === false) return;
 					if (_isMouseDown === false) {
-						var _w:Number = width;
-						var _h:Number = height;
-						var _p:Number = 0.75;
-						var _pw:Number = _w * _p;
-						var _ph:Number = _h * _p;
-						_pw = _pw > 99 ? (_w - 99) : _pw;
-						_ph = _ph > 99 ? (_h - 99) : _ph;
-						Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
-						startDrag(false, new Rectangle(-_pw, -_ph, Ais.IMain.stage.stageWidth - width + _pw * 2, Ais.IMain.stage.stageHeight - height + _ph * 2));
+						var w:Number = width;
+						var h:Number = height;
+						var pw:Number = w * AisySkin.UPWINDOWAIS_DRAG_SCALE;
+						var ph:Number = h * AisySkin.UPWINDOWAIS_DRAG_SCALE;
+//						w = w > AisySkin.UPWINDOWAIS_DRAG_MIN_WIDTH ? AisySkin.UPWINDOWAIS_DRAG_MIN_WIDTH : w * AisySkin.UPWINDOWAIS_DRAG_SCALE;
+//						h = h > AisySkin.UPWINDOWAIS_DRAG_MIN_HEIGHT ? AisySkin.UPWINDOWAIS_DRAG_MIN_HEIGHT : h * AisySkin.UPWINDOWAIS_DRAG_SCALE;
+//						pw = pw < w ? w : pw;
+//						ph = ph < h ? h : ph;
+						pw = pw > AisySkin.UPWINDOWAIS_DRAG_MIN_WIDTH ? (w - AisySkin.UPWINDOWAIS_DRAG_MIN_WIDTH) : pw;
+						ph = ph > AisySkin.UPWINDOWAIS_DRAG_MIN_HEIGHT ? (h - AisySkin.UPWINDOWAIS_DRAG_MIN_HEIGHT) : ph;
 						_isMouseDown = true;
+						_mouseX = e.stageX - x;
+						_mouseY = e.stageY - y;
+						_moveRect = new Rectangle(-pw, -ph, Ais.IMain.stage.stageWidth - width + pw, Ais.IMain.stage.stageHeight - height + ph);
+						removeEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
+						Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
+						Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
 					}
 					break;
 				case MouseEvent.MOUSE_UP:
 					if (_isMouseDown === true) {
-						stopDrag();
-						Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
 						_isMouseDown = false;
+						Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
+						Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
+						addEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
+						_moveRect = null;
 					}
 					break;
 			}
@@ -238,12 +253,9 @@ package org.aisy.upwindow
 		}
 		
 		/**
-		 * 
 		 * 全局侦听
-		 * 
 		 * @param type
 		 * @param data
-		 * 
 		 */
 		protected function __triggerHandler(type:String, data:* = null):void
 		{
@@ -260,6 +272,8 @@ package org.aisy.upwindow
 				case "RESIZE_ALL":
 					__layout();
 					break;
+//				case "TOP":
+//					break;
 				case "RESET_INAME":
 					var i:uint = parseInt(name);
 					if (i > data) name = (--i).toString();
@@ -270,38 +284,55 @@ package org.aisy.upwindow
 		}
 		
 		/**
-		 * 
+		 * 设置 宽度
+		 * @param value
+		 */
+		override public function set width(value:Number):void
+		{
+			_width = value;
+		}
+		
+		/**
+		 * 设置 高度
+		 * @param value
+		 */
+		override public function set height(value:Number):void
+		{
+			_height = value;
+		}
+		
+		/**
 		 * 返回 宽度
-		 * 
 		 * @return 
-		 * 
 		 */
 		override public function get width():Number
 		{
+			if (_isLayout === false && numChildren !== 0) {
+				return getChildAt(null === _bg ? 0 : 1).width;
+			}
 			return _width;
 		}
 		
 		/**
-		 * 
 		 * 返回 高度
-		 * 
 		 * @return 
-		 * 
 		 */
 		override public function get height():Number
 		{
+			if (_isLayout === false && numChildren !== 0) {
+				return getChildAt(null === _bg ? 0 : 1).height;
+			}
 			return _height;
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{
 			__removeEvent();
 			super.clear();
+			_moveRect = null;
 			_bg = null;
 			_closeBtn = null;
 			NAME = null;

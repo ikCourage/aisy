@@ -21,11 +21,8 @@ package org.aisy.listener
 		}
 		
 		/**
-		 * 
 		 * 返回侦听数组
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getListeners():Array
 		{
@@ -69,11 +66,8 @@ package org.aisy.listener
 		}
 		
 		/**
-		 * 
 		 * 清空侦听
-		 * 
 		 * @param type
-		 * 
 		 */
 		public function clearEventListener(type:String = null):void
 		{
@@ -84,9 +78,7 @@ package org.aisy.listener
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{

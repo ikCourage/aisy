@@ -4,6 +4,7 @@ package org.aisy.checkbox
 	
 	import org.ais.event.TEvent;
 	import org.aisy.button.Button;
+	import org.aisy.skin.AisySkin;
 
 	/**
 	 * 
@@ -37,27 +38,26 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 初始化
-		 * 
 		 */
-		protected function init():void
+		override protected function init():void
 		{
+			if (AisySkin.CHECKBOX_AUTO_SKIN === true) {
+				setSkinName(AisySkin.CHECKBOX_SKIN);
+			}
 			addEventListener(MouseEvent.CLICK, mouseClickHandler);
 		}
 		
 		/**
-		 * 
 		 * MOUSE_DOWN 侦听
-		 * 
 		 */
 		protected function mouseClickHandler(e:MouseEvent):void
 		{
 			if (_selected === false) {
-				setClassName(_skinName + 1);
+				setSkinClassName(_skinName + 1);
 			}
 			else {
-				setClassName(_skinName + 0);
+				setSkinClassName(_skinName + 0);
 			}
 			getSkin().gotoAndStop(2);
 			_selected = !_selected;
@@ -66,25 +66,19 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 设置皮肤 （类名）
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setSkinName(value:String):void
 		{
 			_skinName = value;
-			setClassName(value + 0);
+			setSkinClassName(value + 0);
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 设置 是否选中
-		 * 
 		 * @param value
-		 * 
 		 */
 		override public function setSelected(value:Boolean):void
 		{
@@ -93,11 +87,8 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 返回 是否选中
-		 * 
 		 * @return 
-		 * 
 		 */
 		override public function getSelected():Boolean
 		{
@@ -105,11 +96,8 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 设置名字
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function set NAME(value:String):void
 		{
@@ -118,11 +106,8 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 返回名字
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function get NAME():String
 		{
@@ -131,11 +116,8 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 设置索引
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function set index(value:uint):void
 		{
@@ -143,11 +125,8 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 返回索引
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function get index():uint
 		{
@@ -155,9 +134,7 @@ package org.aisy.checkbox
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

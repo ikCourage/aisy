@@ -27,6 +27,9 @@ package org.aisy.ulist
 		 * 标题数据
 		 */
 		public var labelData:*;
+		
+//		public var selectedArr:Array;
+		
 		/**
 		 * Scroller 宽度
 		 */
@@ -41,15 +44,14 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{
 			labelClass = null;
 			listItem = null;
 			listData = null;
+//			selectedArr = null;
 			labelData = null;
 		}
 		

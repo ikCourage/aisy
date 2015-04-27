@@ -25,15 +25,12 @@ package org.aisy.net.data
 		}
 		
 		/**
-		 * 
 		 * 添加一个元素
 		 * 当 e == null 时，添加一个 Dictionary
-		 * 
 		 * @param e
 		 * @param owner
 		 * @param src
 		 * @return 
-		 * 
 		 */
 		static public function addElement(e:*, owner:*, src:Dictionary = null):*
 		{

@@ -34,11 +34,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 返回 计时器 Timer
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getTimer():Timer
 		{
@@ -51,11 +48,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 计时器 Timer 侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		protected function __timerEventHandler(e:TimerEvent):void
 		{
@@ -78,11 +72,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 	每当它完成 Timer.repeatCount 设置的请求数后调度
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setComplete(value:Function):void
 		{
@@ -91,11 +82,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 每当 Timer 对象达到根据 Timer.delay 属性指定的间隔时调度
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setTimer(value:Function):void
 		{
@@ -104,11 +92,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 计时器事件间的延迟（以毫秒为单位）
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setDelay(value:Number):void
 		{
@@ -116,11 +101,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 设置的计时器运行总次数
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setRepeatCount(value:int):void
 		{
@@ -128,11 +110,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 计时器从 0 开始后触发的总次数
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getCurrentCount():int
 		{
@@ -140,11 +119,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 计时器的当前状态；如果计时器正在运行，则为 true，否则为 false
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getRunning():Boolean
 		{
@@ -152,11 +128,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 返回 计时器事件间的延迟
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getDelay():Number
 		{
@@ -164,12 +137,8 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
-		 * 
 		 * 返回 计时器运行总次数
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getRepeatCount():int
 		{
@@ -177,9 +146,7 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 启动计时器
-		 * 
 		 */
 		public function start():void
 		{
@@ -187,9 +154,7 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 如果计时器正在运行，则停止计时器，并将 currentCount 属性设回为 0，这类似于秒表的重置按钮
-		 * 
 		 */
 		public function reset():void
 		{
@@ -197,9 +162,7 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 停止计时器
-		 * 
 		 */
 		public function stop():void
 		{
@@ -207,9 +170,7 @@ package org.aisy.utimer
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{

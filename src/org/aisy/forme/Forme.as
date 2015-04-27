@@ -12,6 +12,7 @@ package org.aisy.forme
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLVariables;
+	import flash.ui.Keyboard;
 	
 	import org.aisy.display.USprite;
 
@@ -31,79 +32,74 @@ package org.aisy.forme
 		/**
 		 * URLRequest
 		 */
-		protected var __urlRequest:URLRequest;
+		protected var _urlRequest:URLRequest;
 		/**
 		 * URLLoader
 		 */
-		protected var __urlLoader:URLLoader;
+		protected var _urlLoader:URLLoader;
 		/**
 		 * 是否正在加载
 		 */
-		protected var isLoading:Boolean;
+		protected var _isLoading:Boolean;
 		/**
 		 * 是否可以提交
 		 */
-		protected var isEnabled:Boolean;
+		protected var _isEnabled:Boolean;
 		/**
 		 * 提交地址
 		 */
-		protected var action:String;
+		protected var _action:String;
 		/**
 		 * 提交方法 （GET / POST）
 		 */
-		protected var method:String;
+		protected var _method:String;
 		/**
 		 * hidden 数据数组
 		 */
-		protected var data:Array;
+		protected var _hiddenData:Array;
 		/**
 		 * submit 按钮 数据数组
 		 */
-		protected var sData:Array;
+		protected var _submitData:Array;
 		/**
 		 * input 数据数组
 		 */
-		protected var inputData:Array;
+		protected var _inputData:Array;
 		/**
 		 * 提交表单前处理函数（回调函数）
 		 */
-		protected var __submitF:Function;
+		protected var _submitF:Function;
 		/**
 		 * 提交表单中处理函数（URLLoader 回调函数）
 		 */
-		protected var __loaderF:Function;
+		protected var _loaderF:Function;
 		/**
 		 * 表单数据的编码函数 (回调函数)
 		 */
-		protected var __encodeF:Function;
+		protected var _encodeF:Function;
 		
 		public function Forme(action:String, method:String = "GET")
 		{
-			this.action = action;
-			this.method = method;
+			_action = action;
+			_method = method;
 			setFormData(action, method);
 			init();
 		}
 		
 		/**
-		 * 
 		 * 初始化
-		 * 
 		 */
 		protected function init():void
 		{
-			setEncodeEvent();
+			setEncode();
 			addEventListener(FocusEvent.FOCUS_IN, __eventHandler);
 		}
 		
 		/**
-		 * 
 		 * 表单事件侦听
-		 * 
 		 * @param e
-		 * 
 		 */
-		protected function __eventHandler(e:*):void
+		protected function __eventHandler(e:Event):void
 		{
 			switch (e.type) {
 				case FocusEvent.FOCUS_IN:
@@ -117,14 +113,14 @@ package org.aisy.forme
 					addEventListener(FocusEvent.FOCUS_IN, __eventHandler);
 					break;
 				case KeyboardEvent.KEY_UP:
-					if (e.keyCode === 13) {
-						setFormData(action, method);
+					if ((e as KeyboardEvent).keyCode === Keyboard.ENTER) {
+						setFormData(_action, _method);
 						submitForme();
 					}
 					break;
 				case MouseEvent.CLICK:
-					setFormData(action, method);
-					if (getSData()[e.currentTarget].data) setFormData(getSData()[e.currentTarget].data.action, getSData()[e.currentTarget].data.method);
+					if (getSubmitData()[e.currentTarget.name].data) setFormData(getSubmitData()[e.currentTarget.name].data.action, getSubmitData()[e.currentTarget.name].data.method);
+					else setFormData(_action, _method);
 					submitForme();
 					break;
 			}
@@ -132,30 +128,27 @@ package org.aisy.forme
 		}
 		
 		/**
-		 * 
 		 * URLLoader 事件侦听
-		 * 
 		 * @param e
-		 * 
 		 */
-		protected function __loaderEventHandler(e:*):void
+		protected function __loaderEventHandler(e:Event):void
 		{
-			if (null !== __loaderF) {
+			if (null !== _loaderF) {
 				var arr:Array = [e, getURLLoader(), this];
-				__loaderF.apply(null, arr.slice(0, __loaderF.length));
+				_loaderF.apply(null, arr.slice(0, _loaderF.length));
 				arr = null;
 			}
 			switch (e.type) {
 				case Event.COMPLETE:
-					isLoading = false;
+					_isLoading = false;
 					clearLoader();
 					break;
 				case IOErrorEvent.IO_ERROR:
-					isLoading = false;
+					_isLoading = false;
 					clearLoader();
 					break;
 				case SecurityErrorEvent.SECURITY_ERROR:
-					isLoading = false;
+					_isLoading = false;
 					clearLoader();
 					break;
 			}
@@ -163,77 +156,60 @@ package org.aisy.forme
 		}
 		
 		/**
-		 * 
 		 * 返回 hidden 数据
-		 * 
 		 * @return 
-		 * 
 		 */
-		protected function getData():Array
+		protected function getHiddenData():Array
 		{
-			return null === data ? data = [] : data;
+			return null === _hiddenData ? _hiddenData = [] : _hiddenData;
 		}
 		
 		/**
-		 * 
 		 * 返回 submit 按钮 数据
-		 * 
 		 * @return 
-		 * 
 		 */
-		protected function getSData():Array
+		protected function getSubmitData():Array
 		{
-			return null === sData ? sData = [] : sData;
+			return null === _submitData ? _submitData = [] : _submitData;
 		}
 		
 		/**
-		 * 
 		 * 返回 input 数据
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getInputData():Array
 		{
-			if (null === inputData) inputData = [];
-			return inputData;
+			if (null === _inputData) _inputData = [];
+			return _inputData;
 		}
 		
 		/**
-		 * 
 		 * 返回 URLRequest
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getURLRequest():URLRequest
 		{
-			if (null === __urlRequest) __urlRequest = new URLRequest();
-			return __urlRequest;
+			if (null === _urlRequest) _urlRequest = new URLRequest();
+			return _urlRequest;
 		}
 		
 		/**
-		 * 
 		 * 返回 URLLoader
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getURLLoader():URLLoader
 		{
-			if (null === __urlLoader) __urlLoader = new URLLoader();
-			return __urlLoader;
+			if (null === _urlLoader) _urlLoader = new URLLoader();
+			return _urlLoader;
 		}
 		
 		/**
-		 * 
 		 * 清空 URLLoader
-		 * 
 		 */
 		protected function clearLoader():void
 		{
-			if (null === __urlLoader) return;
-			if (isLoading === true) getURLLoader().close();
+			if (null === _urlLoader) return;
+			if (_isLoading === true) getURLLoader().close();
 			getURLLoader().removeEventListener(Event.COMPLETE, __loaderEventHandler);
 			getURLLoader().removeEventListener(Event.OPEN, __loaderEventHandler);
 			getURLLoader().removeEventListener(HTTPStatusEvent.HTTP_STATUS, __loaderEventHandler);
@@ -242,12 +218,9 @@ package org.aisy.forme
 		}
 		
 		/**
-		 * 
 		 * 默认 表单数据的编码函数 (回调函数)
-		 * 
 		 * @param value
 		 * @return 
-		 * 
 		 */
 		protected function encode(value:*):*
 		{
@@ -255,127 +228,94 @@ package org.aisy.forme
 		}
 		
 		/**
-		 * 
 		 * 提交表单
-		 * 
 		 */
 		public function submitForme():void
 		{
-			if (isLoading === true) {
-				clearLoader();
-			}
-			
-			isEnabled = true;
-			
-			if (null !== __submitF) {
+			clearLoader();
+			_isEnabled = true;
+			if (null !== _submitF) {
 				var arr:Array = [this];
-				__submitF.apply(null, arr.slice(0, __submitF.length));
+				_submitF.apply(null, arr.slice(0, _submitF.length));
 				arr = null;
 			}
-			
-			if (isEnabled === false) return;
-			
+			if (_isEnabled === false) return;
 			getURLLoader().addEventListener(Event.COMPLETE, __loaderEventHandler);
 			getURLLoader().addEventListener(Event.OPEN, __loaderEventHandler);
 			getURLLoader().addEventListener(HTTPStatusEvent.HTTP_STATUS, __loaderEventHandler);
 			getURLLoader().addEventListener(IOErrorEvent.IO_ERROR, __loaderEventHandler);
 			getURLLoader().addEventListener(SecurityErrorEvent.SECURITY_ERROR, __loaderEventHandler);
-			
-			var _v:URLVariables = new URLVariables();
-			for each (var i:* in getData()) {
-				_v[i.name] = __encodeF(i.value);
+			var v:URLVariables = new URLVariables();
+			for each (var i:* in getHiddenData()) {
+				v[i.name] = _encodeF(i.value);
 			}
-			
 			for each (i in getInputData()) {
-				_v[i.name] = __encodeF(i.obj.text);
+				v[i.name] = _encodeF(i.obj.text);
 			}
-			
-			getURLRequest().data = _v;
-			
+			getURLRequest().data = v;
 			getURLLoader().load(getURLRequest());
-			
-			isLoading = true;
-			
-			_v = null;
+			_isLoading = true;
+			v = null;
 		}
 		
 		/**
-		 * 
 		 * 设置是否可以提交表单
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setEnabled(value:Boolean):void
 		{
-			isEnabled = value;
+			_isEnabled = value;
 		}
 		
 		/**
-		 * 
 		 * 设置表单属性
-		 * 
 		 * @param action
 		 * @param method
-		 * 
 		 */
-		public function setFormData(action:String, method:String = ""):void
+		public function setFormData(action:String, method:String = null):void
 		{
-			if (method === "") method = this.method;
-			getURLRequest().url = action;
-			getURLRequest().method = method;
-			
+			getURLRequest().url = action ? action : _action;
+			getURLRequest().method = method ? method : _method;
 			action = null;
 			method = null;
 		}
 		
 		/**
-		 * 
 		 * 将显示元素添加到表单中
-		 * 
 		 * @param value
-		 * 
 		 */
 		protected function addElement(value:InteractiveObject):void
 		{
-			var _p:Point = value.localToGlobal(new Point(0, 0));
-			value.x = _p.x;
-			value.y = _p.y;
-			
+			var p:Point = value.localToGlobal(new Point(0, 0));
+			value.x = p.x;
+			value.y = p.y;
 			value.tabIndex = Forme.TAB_INDEX;
 			Forme.TAB_INDEX++;
 			addChild(value);
-			
-			_p = null;
+			p = null;
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 添加 hidden 数据
 		 * data 格式 {"name": "name", "value": "value"}
-		 * 
 		 * @param data
-		 * 
 		 */
 		public function addHidden(name:String, value:*):void
 		{
-			getData()[getData().length] = {"name": name, "value": value};
+			getHiddenData()[getHiddenData().length] = {"name": name, "value": value};
 			name = null;
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 添加 input 数据
-		 * 
 		 * @param value
 		 * @param name
-		 * 
 		 */
 		public function addInput(value:InteractiveObject, name:String = ""):void
 		{
-			if (name !== "") {
+			if (name) {
 				getInputData()[getInputData().length] = {"obj": value, "name": name};
 			}
 			value.x -= 1.1;
@@ -386,18 +326,15 @@ package org.aisy.forme
 		}
 		
 		/**
-		 * 
 		 * 添加 submit 按钮 数据
 		 * data 格式 {"action": "action", "method": "GET"}
-		 * 
 		 * @param value
 		 * @param data
-		 * 
 		 */
 		public function addSubmit(value:InteractiveObject, data:* = null):void
 		{
-			if (null === data) getSData()[value] = {"obj": value};
-			else getSData()[value] = {"obj": value, "data": data};
+			if (null === data) getSubmitData()[value.name] = {"obj": value};
+			else getSubmitData()[value.name] = {"obj": value, "data": data};
 			addElement(value);
 			value.addEventListener(MouseEvent.CLICK, __eventHandler);
 			value = null;
@@ -405,81 +342,67 @@ package org.aisy.forme
 		}
 		
 		/**
-		 * 
 		 * 设置 提交表单前处理函数（回调函数）
-		 * 
 		 * @param value
-		 * 
 		 */
-		public function setSubmitEvent(value:Function):void
+		public function setSubmit(value:Function):void
 		{
-			__submitF = value;
+			_submitF = value;
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 设置 提交表单中处理函数（URLLoader 回调函数）
-		 * 
 		 * @param value
-		 * 
 		 */
-		public function setLoaderEvent(value:Function):void
+		public function setLoader(value:Function):void
 		{
-			__loaderF = value;
+			_loaderF = value;
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 设置 表单数据的编码函数 (回调函数)
-		 * 
 		 * @param value
-		 * 
 		 */
-		public function setEncodeEvent(value:Function = null):void
+		public function setEncode(value:Function = null):void
 		{
-			if (null === value) __encodeF = encode;
-			else __encodeF = value;
+			if (null === value) _encodeF = encode;
+			else _encodeF = value;
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 移除 表单事件侦听
-		 * 
 		 */
-		protected function removeEvent():void
+		protected function __removeEvent():void
 		{
 			removeEventListener(FocusEvent.FOCUS_IN, __eventHandler);
 			removeEventListener(FocusEvent.FOCUS_OUT, __eventHandler);
 			removeEventListener(KeyboardEvent.KEY_UP, __eventHandler);
-			for each (var i:* in getSData()) {
+			for each (var i:* in getSubmitData()) {
 				i.obj.removeEventListener(MouseEvent.CLICK, __eventHandler);
 			}
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{
-			removeEvent();
+			__removeEvent();
 			clearLoader();
-			
-			__urlRequest = null;
-			__urlLoader = null;
-			action = null;
-			method = null;
-			data = null;
-			sData = null;
-			inputData = null;
-			__submitF = null;
-			__loaderF = null;
-			__encodeF = null;
 			super.clear();
+			_urlRequest = null;
+			_urlLoader = null;
+			_action = null;
+			_method = null;
+			_hiddenData = null;
+			_submitData = null;
+			_inputData = null;
+			_submitF = null;
+			_loaderF = null;
+			_encodeF = null;
 		}
 		
 	}

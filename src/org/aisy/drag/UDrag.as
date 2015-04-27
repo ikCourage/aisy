@@ -2,6 +2,7 @@ package org.aisy.drag
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
+	import flash.events.MouseEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -25,33 +26,41 @@ package org.aisy.drag
 		/**
 		 * 当前拖动的容器
 		 */
-		protected var _tempUS:USprite;
+		protected var _drag:USprite;
 		/**
-		 * 事件刷新定时器
+		 * 移动事件刷新定时器
 		 */
 		protected var _utimer:UTimer;
 		/**
-		 * 事件刷新时间
+		 * 移动事件刷新时间
 		 */
-		protected var _delay:Number = 200;
+		protected var _delay:Number = 0;
+		/**
+		 * 移动事件刷新模式
+		 */
+		protected var _mode:int = 1;
+		/**
+		 * 显示时布局函数
+		 */
+		protected var _showLayout:Function;
+		/**
+		 * 隐藏时布局函数
+		 */
+		protected var _hideLayout:Function;
 		
 		public function UDrag()
 		{
 		}
 		
 		/**
-		 * 
 		 * 开始拖动
-		 * 
 		 * @param us
 		 * @param type
 		 * @param parameters
 		 * @return 
-		 * 
 		 */
 		public function startDrag(us:USprite, type:String, ...parameters):USprite
 		{
-			stopDrag();
 			var r0:Rectangle = us.getBounds(Ais.IMain.stage);
 			var r1:Rectangle = us.getBounds(us);
 			var bmd0:BitmapData = new BitmapData(r1.width, r1.height, true, 0x00000000);
@@ -64,61 +73,90 @@ package org.aisy.drag
 				bmd0 = bmd1;
 				bmd1 = null;
 			}
-			_tempUS = new USprite();
-			_tempUS.mouseChildren = _tempUS.mouseEnabled = false;
-			_tempUS.x = r0.x + r1.x;
-			_tempUS.y = r0.y + r1.y;
-			var bm:Bitmap = new Bitmap(bmd0);
-			_tempUS.addChild(bm);
-			_tempUS.startDrag();
-			Ais.IMain.stage.addChild(_tempUS);
+			_drag = new USprite();
+			_drag.mouseChildren = _drag.mouseEnabled = false;
+			_drag.x = r0.x + r1.x;
+			_drag.y = r0.y + r1.y;
+			_drag.dynamic = {};
+			_drag.dynamic["target"] = us;
+			_drag.dynamic["type"] = type;
+			_drag.dynamic["parameters"] = parameters;
+			_drag.dynamic["x"] = _drag.x;
+			_drag.dynamic["y"] = _drag.y;
+			_drag.dynamic["_x"] = Ais.IMain.stage.mouseX - _drag.x;
+			_drag.dynamic["_y"] = Ais.IMain.stage.mouseY - _drag.y;
+			_drag.addChild(new Bitmap(bmd0));
+			_drag.startDrag();
+			Ais.IMain.stage.addChild(_drag);
 			
-			_tempUS.dynamic = {};
-			_tempUS.dynamic["target"] = us;
-			_tempUS.dynamic["type"] = type;
-			_tempUS.dynamic["parameters"] = parameters;
+			if (null !== _showLayout) {
+				_showLayout(_drag);
+				_showLayout = null;
+			}
 			
-			_utimer = new UTimer();
-			_utimer.setDelay(_delay);
-			_utimer.setTimer(__utimerHandler);
-			_utimer.start();
+			if (_mode !== 0) {
+				if (_mode === 1 || _delay === 0) {
+					Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_MOVE, __stageHandler);
+				}
+				else {
+					if (_mode === 3) {
+						Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_MOVE, __stageHandler);
+					}
+					_utimer = new UTimer();
+					_utimer.setDelay(_delay);
+					_utimer.setTimer(__utimerHandler);
+					_utimer.start();
+				}
+			}
 			
 			r0 = null;
 			r1 = null;
 			bmd0 = null;
-			bm = null;
 			us = null;
 			type = null;
 			parameters = null;
 			
-			return _tempUS;
+			return _drag;
 		}
 		
 		/**
-		 * 
 		 * 结束拖动
-		 * 
 		 */
 		public function stopDrag():void
 		{
+			Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_MOVE, __stageHandler);
 			if (null !== _utimer) {
 				_utimer.clear();
 				_utimer = null;
 			}
-			if (null !== _tempUS) {
-				TEvent.trigger(_tempUS.dynamic.type, UDragEvent.DRAG_STOP, _tempUS);
-				Bitmap(_tempUS.getChildAt(0)).bitmapData.dispose();
-				_tempUS.clear();
-				_tempUS = null;
+			if (null !== _drag) {
+				_drag.stopDrag();
+				TEvent.trigger(_drag.dynamic.type, UDragEvent.DRAG_STOP, _drag);
+				if (null === _hideLayout) {
+					(_drag.getChildAt(0) as Bitmap).bitmapData.dispose();
+					_drag.clear();
+				}
+				else {
+					_hideLayout(_drag);
+				}
+				_drag = null;
 			}
+			_showLayout = null;
+			_hideLayout = null;
 		}
 		
 		/**
-		 * 
-		 * 设置事件刷新时间
-		 * 
+		 * 设置移动事件刷新模式
 		 * @param value
-		 * 
+		 */
+		public function setMode(value:int):void
+		{
+			_mode = value;
+		}
+		
+		/**
+		 * 设置移动事件刷新时间
+		 * @param value
 		 */
 		public function setDelay(value:Number):void
 		{
@@ -126,11 +164,35 @@ package org.aisy.drag
 		}
 		
 		/**
-		 * 
-		 * 返回事件刷新时间
-		 * 
+		 * 设置显示时布局函数
+		 * @param value
+		 */
+		public function setShowLayout(value:Function):void
+		{
+			_showLayout = value;
+		}
+		
+		/**
+		 * 设置隐藏时布局函数
+		 * @param value
+		 */
+		public function setHideLayout(value:Function):void
+		{
+			_hideLayout = value;
+		}
+		
+		/**
+		 * 返回移动事件刷新模式
 		 * @return 
-		 * 
+		 */
+		public function getMode():int
+		{
+			return _mode;
+		}
+		
+		/**
+		 * 返回移动事件刷新时间
+		 * @return 
 		 */
 		public function getDelay():Number
 		{
@@ -138,19 +200,37 @@ package org.aisy.drag
 		}
 		
 		/**
-		 * 
-		 * 事件刷新定时器的侦听
-		 * 
+		 * 返回当前拖动的容器
+		 * @return 
 		 */
-		protected function __utimerHandler():void
+		public function getDrag():USprite
 		{
-			TEvent.trigger(_tempUS.dynamic.type, UDragEvent.DRAG_MOVE, _tempUS);
+			return _drag;
 		}
 		
 		/**
-		 * 
+		 * 移动事件刷新定时器的侦听
+		 */
+		protected function __utimerHandler():void
+		{
+			if (null !== _drag) TEvent.trigger(_drag.dynamic.type, UDragEvent.DRAG_MOVE, _drag);
+		}
+		
+		/**
+		 * 舞台事件侦听
+		 * @param e
+		 */
+		protected function __stageHandler(e:MouseEvent):void
+		{
+			if (null !== _drag) {
+				_drag.x = Ais.IMain.stage.mouseX - _drag.dynamic["_x"];
+				_drag.y = Ais.IMain.stage.mouseY - _drag.dynamic["_y"];
+				__utimerHandler();
+			}
+		}
+		
+		/**
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{

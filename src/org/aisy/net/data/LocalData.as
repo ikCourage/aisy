@@ -6,7 +6,7 @@ package org.aisy.net.data
 	
 	import org.aisy.autoclear.AisyAutoClear;
 	import org.aisy.interfaces.IClear;
-	import org.aisy.utils.AisyUtils;
+	import org.aisy.utils.AisyUtil;
 
 	/**
 	 * 
@@ -21,11 +21,12 @@ package org.aisy.net.data
 		protected var _isDestop:Boolean;
 		protected var _name:String;
 		protected var _localPath:String;
+		protected var _lastTime:Number;
 		protected var _data:Object;
 		
 		public function LocalData(name:String, localPath:String = null, secure:Boolean = false)
 		{
-			_isDestop = AisyUtils.isDestop;
+			_isDestop = AisyUtil.isDestop;
 			if (_isDestop === false) {
 				_data = SharedObject.getLocal(name, localPath, secure);
 			}
@@ -37,12 +38,22 @@ package org.aisy.net.data
 					var xml:XML = nApp.nativeApplication.applicationDescriptor;
 					var ns:Namespace = new Namespace(xml.namespace());
 					var arr:Array = (getDefinitionByName("flash.filesystem.File") as Class).applicationStorageDirectory.nativePath.split(/[\\\/]/);
-					_localPath = "file:///" + arr.slice(0, arr.length - 2).join("/") + "/" + String(xml.ns::filename).replace(/\_/, "-") + "/Aisy Data/.LocalData/" + nApp.nativeApplication.openedWindows[0].stage.loaderInfo.url.replace(/^app\:/ig, "") + "/";
+					var appName:String = String(xml.ns::filename);
+					var appName2:String;
+					if (nApp.nativeApplication.openedWindows.length === 0) {
+						appName2 = appName;
+					}
+					else {
+						appName2 = nApp.nativeApplication.openedWindows[0].stage.loaderInfo.url.replace(/^app\:/ig, "");
+					}
+					_localPath = "file:///" + arr.slice(0, arr.length - 2).join("/") + "/" + appName + "/Aisy Data/.LocalData/" + appName2 + "/";
 					deleteEmptyDirectory();
 					nApp = null;
 					xml = null;
 					ns = null;
 					arr = null;
+					appName = null;
+					appName2 = null;
 				}
 			}
 			name = null;
@@ -76,19 +87,20 @@ package org.aisy.net.data
 			if (_isDestop === false) {
 				return (_data as SharedObject).data;
 			}
+			var f:* = new (getDefinitionByName("flash.filesystem.File") as Class)(_localPath + _name + ".iy");
+			if (f.exists === true && f.modificationDate.getTime() !== _lastTime) {
+				_lastTime = f.modificationDate.getTime();
+				var fs:* = new (getDefinitionByName("flash.filesystem.FileStream") as Class)();
+				fs.open(f, (getDefinitionByName("flash.filesystem.FileMode") as Class).READ);
+				_data = fs.readObject();
+				fs.close();
+				fs = null;
+			}
 			if (null === _data) {
 				_data = {};
-				var f:* = new (getDefinitionByName("flash.filesystem.File") as Class)(_localPath + _name + ".iy");
-				if (f.exists === true) {
-					var fs:* = new (getDefinitionByName("flash.filesystem.FileStream") as Class)();
-					fs.open(f, (getDefinitionByName("flash.filesystem.FileMode") as Class).READ);
-					_data = fs.readObject();
-					fs.close();
-					fs = null;
-				}
-				f.cancel();
-				f = null;
 			}
+			f.cancel();
+			f = null;
 			return _data;
 		}
 		
@@ -102,10 +114,10 @@ package org.aisy.net.data
 			fs.open(f, (getDefinitionByName("flash.filesystem.FileMode") as Class).WRITE);
 			fs.writeObject(_data);
 			fs.close();
+			_lastTime = f.modificationDate.getTime();
 			f.cancel();
 			fs = null;
 			f = null;
-			_data = null;
 			return SharedObjectFlushStatus.FLUSHED;
 		}
 		
@@ -114,6 +126,7 @@ package org.aisy.net.data
 			if (_isDestop === false && null !== _data) {
 				(_data as SharedObject).close();
 			}
+			_lastTime = 0;
 			_name = null;
 			_localPath = null;
 			_data = null;

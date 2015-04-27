@@ -35,6 +35,7 @@ package org.aisy.ulist
 		 * 列表 容器
 		 */
 		protected var _listGroup:USprite;
+//		protected var _bgMc:Sprite;
 		/**
 		 * 组件的数据属性	源自 Class UListData
 		 */
@@ -50,9 +51,7 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 初始化
-		 * 
 		 */
 		protected function init():void
 		{
@@ -60,10 +59,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 开始进行组件实例化
 		 * 在 setLabel，setListItem，setListData 后执行
-		 * 
 		 */
 		public function initializeView():void
 		{
@@ -89,7 +86,13 @@ package org.aisy.ulist
 			if (null !== _listGroup) _listGroup.clear();
 			else _listGroup = new USprite();
 			
+//			if (null === _bgMc) _bgMc = new (getDefinitionByName("BOBOBOX_SKIN_LIST_BG") as Class)();
+//			_listGroup.addChild(_bgMc);
+			
 			_listoy.initializeView();
+			
+//			_listGroup.addChild(_listoy);
+//			return;
 			
 			if (null === _scroller) {
 				var s:Scroller = new Scroller();
@@ -100,15 +103,15 @@ package org.aisy.ulist
 			_scroller.setSize(iData.scrollWidth, iData.scrollHeight);
 			
 			_listGroup.addChild(_scroller);
+//			
+//			_bgMc.width = _scroller.width + 10;
+//			_bgMc.height = _scroller.height + 10;
 		}
 		
 		/**
-		 * 
 		 * 设置标题渲染类，数据
-		 * 
 		 * @param label
 		 * @param data
-		 * 
 		 */
 		public function setLabel(label:Class, data:*):void
 		{
@@ -119,11 +122,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置标题渲染类
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setLabelClass(value:Class):void
 		{
@@ -132,11 +132,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置标题渲染数据
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setLabelData(value:*):void
 		{
@@ -145,11 +142,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置 Listoy Item 渲染类
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setListItem(value:Class):void
 		{
@@ -158,11 +152,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置 Listoy 数据
-		 * 
 		 * @param value (Array or Vector)
-		 * 
 		 */
 		public function setListData(value:*):void
 		{
@@ -171,12 +162,9 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置 Scrolloer 宽高
-		 * 
 		 * @param width
 		 * @param height
-		 * 
 		 */
 		public function setScrollSize(width:Number = 0, height:Number = 0):void
 		{
@@ -185,11 +173,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置 Scroller
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setScroll(value:Scroller):void
 		{
@@ -198,26 +183,21 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 设置 Listoy
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setListoy(value:Listoy):void
 		{
 			if (null !== _listoy) _listoy.clear();
 			_listoy = value;
 			NAME = value.NAME;
+//			TEvent.newTrigger(NAME, __triggerHandler);
 			value = null;
 		}
 		
 		/**
-		 * 
 		 * 返回 Listoy
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getListoy():Listoy
 		{
@@ -225,11 +205,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 返回 Scroller
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getScroll():Scroller
 		{
@@ -237,11 +214,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 返回列表容器
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getGroup():USprite
 		{
@@ -249,9 +223,7 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 显示列表
-		 * 
 		 */
 		public function showList():void
 		{
@@ -309,9 +281,7 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 隐藏列表
-		 * 
 		 */
 		public function hideList():void
 		{
@@ -320,12 +290,9 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 全局侦听
-		 * 
 		 * @param type
 		 * @param data
-		 * 
 		 */
 		protected function __triggerHandler(type:String, data:* = null):void
 		{
@@ -333,15 +300,22 @@ package org.aisy.ulist
 				case "SHOW":
 					showList();
 					break;
+				case "INIT_SELECT":
+					break;
+				case "SELECT":
+					break;
+				case "RADIO_SELECT":
+//					_label.updateView(data);
+					break;
+				case "CLEAR":
+					break;
 			}
 			type = null;
 			data = null;
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{
@@ -355,6 +329,7 @@ package org.aisy.ulist
 			_listoy = null;
 			_scroller = null;
 			_listGroup = null;
+//			_bgMc = null;
 			
 			iData.clear();
 			iData = null;

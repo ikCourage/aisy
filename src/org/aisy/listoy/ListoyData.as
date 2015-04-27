@@ -87,25 +87,33 @@ package org.aisy.listoy
 		 */
 		public var maskHeight:Number;
 		/**
-		 * itemRenderer 自定义渲染器
+		 * itemRenderer 自定义渲染器（Class or Function）
 		 */
-		public var itemRenderer:Class;
+		public var itemRenderer:Object;
 		/**
 		 * dataProvider 将要显示的元素数组 (Array or Vector)
 		 */
-		public var dataProvider:*;
+		public var dataProvider:Object;
 		/**
-		 * 设定（横 / 竖）排版
+		 * 设置（横 / 竖）排版
 		 */
 		public var layout:uint = ListoyEnum.LAYOUT_HORIZONTAL;
+		/**
+		 * 设置渲染方式
+		 */
+		public var mode:uint = ListoyEnum.MODE_ALL;
 		/**
 		 * 总页数
 		 */
 		public var totalPage:uint;
 		/**
-		 * 设置翻页延迟
+		 * 当前页数
 		 */
-		public var delay:Number = 0.8;
+		public var curPage:uint;
+		/**
+		 * 设置翻页持续时间
+		 */
+		public var duration:Number = 0.8;
 		/**
 		 * 是否有背景
 		 */
@@ -116,13 +124,11 @@ package org.aisy.listoy
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{
-			totalPage = rowTotal = columnTotal = curRow = curColumn = 0;
+			totalPage = curPage = rowTotal = columnTotal = curRow = curColumn = moveWidth = moveHeight = maskWidth = maskHeight = 0;
 			if (null !== group) {
 				group.clear();
 				group = null;

@@ -1,5 +1,6 @@
 package org.aisy.display
 {
+	import flash.display.Loader;
 	import flash.display.MovieClip;
 	
 	import org.ais.system.Memory;
@@ -30,11 +31,8 @@ package org.aisy.display
 		}
 		
 		/**
-		 * 
 		 * 设置动态数据
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function set dynamic(value:*):void
 		{
@@ -43,11 +41,8 @@ package org.aisy.display
 		}
 		
 		/**
-		 * 
 		 * 返回动态数据
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function get dynamic():*
 		{
@@ -74,11 +69,8 @@ package org.aisy.display
 		}
 		
 		/**
-		 * 
 		 * 清空侦听
-		 * 
 		 * @param type
-		 * 
 		 */
 		public function clearEventListener(type:String = null):void
 		{
@@ -86,12 +78,14 @@ package org.aisy.display
 			var i:uint, len:uint, j:String, listeners:Array, v:Array, ls:Array = __uListener.getListeners();
 			if (null !== type) {
 				listeners = ls[type];
-				len = listeners.length;
-				for (i = 0; i < len; i++) {
-					v = listeners[i];
-					super.removeEventListener(type, v[0], v[1]);
+				if (null !== listeners) {
+					len = listeners.length;
+					for (i = 0; i < len; i++) {
+						v = listeners[i];
+						super.removeEventListener(type, v[0], v[1]);
+					}
+					__uListener.clearEventListener(type);
 				}
-				__uListener.clearEventListener(type);
 			}
 			else {
 				for (j in ls) {
@@ -114,23 +108,22 @@ package org.aisy.display
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		public function clear():void
 		{
 			AisyAutoClear.remove(this);
-			var obj:*;
-			while (numChildren) {
-				obj = getChildAt(0);
+			clearEventListener();
+			var i:uint = numChildren, obj:*;
+			while (i) {
+				i--;
+				obj = getChildAt(i);
 				if (obj is IClear) obj.clear();
-				else removeChildAt(0);
+				else removeChildAt(i);
 			}
 			obj = null;
 			__dynamic = null;
-			if (null !== parent) parent.removeChild(this);
-			clearEventListener();
+			if (null !== parent) if ((parent is Loader) === false) parent.removeChild(this);
 		}
 		
 	}

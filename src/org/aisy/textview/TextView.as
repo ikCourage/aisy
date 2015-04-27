@@ -11,7 +11,7 @@ package org.aisy.textview
 
 	/**
 	 * 
-	 * 可点文本
+	 * 可响应的文本
 	 * 
 	 * @author viqu
 	 * 
@@ -36,14 +36,12 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 计算布局
-		 * 
 		 */
 		protected function __layout():void
 		{
 			getHitArea().graphics.clear();
-			getHitArea().graphics.beginFill(0x000000, 0);
+			getHitArea().graphics.beginFill(0xFF0000, 0);
 			getHitArea().graphics.drawRoundRect(0, 0, width, height, 0);
 			getHitArea().graphics.endFill();
 			scrollRect = null;
@@ -52,11 +50,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 返回 TextField
-		 * 
 		 * @return 
-		 * 
 		 */
 		public function getTextField():TextField
 		{
@@ -70,24 +65,18 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 返回 TextFormat
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getTextFormat():TextFormat
 		{
-			if (null === _textFormat) _textFormat = AisySkin.TEXTFORMAT();
+			if (null === _textFormat) _textFormat = AisySkin.TEXT_FORMAT();
 			return _textFormat;
 		}
 		
 		/**
-		 * 
 		 * 返回 可点区域
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getHitArea():USprite
 		{
@@ -96,12 +85,9 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置默认 TextFormat
-		 * 
 		 * @param beginIndex
 		 * @param endIndex
-		 * 
 		 */
 		protected function __setDefaultFormat(format:TextFormat = null, beginIndex:int = -1, endIndex:int = -1):void
 		{
@@ -116,12 +102,9 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置文本
-		 * 
 		 * @param value
 		 * @param width
-		 * 
 		 */
 		public function setText(value:String, width:Number = 0, height:Number = 0):void
 		{
@@ -141,11 +124,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置字体
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setFont(value:String):void
 		{
@@ -155,11 +135,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置颜色
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setColor(value:uint):void
 		{
@@ -168,11 +145,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置字体大小
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setFontSize(value:Number):void
 		{
@@ -181,11 +155,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置粗体
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setBold(value:Boolean):void
 		{
@@ -194,11 +165,18 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
-		 * 设置下划线
-		 * 
+		 * 设置斜体
 		 * @param value
-		 * 
+		 */
+		public function setItalic(value:Boolean):void
+		{
+			getTextFormat().italic = value;
+			__setDefaultFormat();
+		}
+		
+		/**
+		 * 设置下划线
+		 * @param value
 		 */
 		public function setUnderLine(value:Boolean):void
 		{
@@ -207,13 +185,10 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置 TextFormat
-		 * 
 		 * @param format
 		 * @param beginIndex
 		 * @param endIndex
-		 * 
 		 */
 		public function setFormat(format:TextFormat, beginIndex:int = -1, endIndex:int = -1):void
 		{
@@ -222,12 +197,9 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 根据 style 设置 TextFormat
-		 * 
 		 * @param style
 		 * @param value
-		 * 
 		 */
 		public function setFormatStyle(style:String, value:*):void
 		{
@@ -238,14 +210,11 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置可显示大小
-		 * 
 		 * @param width
 		 * @param useFormat
 		 * @param ellipsis
 		 * @return 
-		 * 
 		 */
 		public function setShowSize(width:Number = 0, height:Number = 0, useFormat:Boolean = false, ellipsis:String = "..."):Boolean
 		{
@@ -320,11 +289,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置 是否可用
-		 * 
 		 * @param value
-		 * 
 		 */
 		public function setEnabled(value:Boolean):void
 		{
@@ -332,11 +298,8 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 设置动态数据
-		 * 
 		 * @param value
-		 * 
 		 */
 		override public function set dynamic(value:*):void
 		{
@@ -346,17 +309,16 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 清空显示
-		 * 
 		 */
 		public function clearView():void
 		{
-			var obj:*;
-			while (numChildren) {
-				obj = getChildAt(0);
+			var i:uint = numChildren, obj:*;
+			while (i) {
+				i--;
+				obj = getChildAt(i);
 				if (obj is IClear) obj.clear();
-				else removeChildAt(0);
+				else removeChildAt(i);
 			}
 			obj = null;
 			scrollRect = null;
@@ -366,9 +328,7 @@ package org.aisy.textview
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

@@ -28,14 +28,22 @@ package org.aisy.scroller
 		
 		public function Scroller()
 		{
+			init();
 		}
 		
 		/**
-		 * 
+		 * 初始化
+		 */
+		protected function init():void
+		{
+			if (AisySkin.SCROLLER_AUTO_SKIN === true) {
+				setSkinClassName(AisySkin.SCROLLER_SKIN);
+			}
+		}
+		
+		/**
 		 * 返回 ScrollerData
-		 * 
 		 * @return 
-		 * 
 		 */
 		protected function getData():ScrollerData
 		{
@@ -43,29 +51,31 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
 		 * 计算布局
-		 * 
 		 */
 		protected function __layout():void
 		{
 			if (null === getData().mask) return;
+			getDefinitionByName(AisySkin.TWEEN_LITE).killTweensOf(getData().obj);
 			getData().mask.width = getData().width;
 			getData().mask.height = getData().height;
 			
 			graphics.clear();
-			graphics.beginFill(0xff0000, 0);
+			graphics.beginFill(0xFF0000, 0);
 			graphics.drawRect(0, 0, getData().width, getData().height);
 			graphics.endFill();
 			
-			getData().moveDelay = 0;
+			getData().moveDuration = 0;
 			
+			if (getData().isMouseDown === false) {
+				getData().obj.x = getData().obj.y = 0;
+			}
 			switch (getData().layout) {
 				case 0:
-					if (null !== getData().skinClass && null === getData().scrollV) setSkin(new (getData().skinClass)(), 1);
-					else setSkin(null, 1);
 					if (null !== getData().skinClass && null === getData().scrollH) setSkin(new (getData().skinClass)(), 2);
 					else setSkin(null, 2);
+					if (null !== getData().skinClass && null === getData().scrollV) setSkin(new (getData().skinClass)(), 1);
+					else setSkin(null, 1);
 					break;
 				case 1:
 					if (null !== getData().skinClass && null === getData().scrollV) setSkin(new (getData().skinClass)(), 1);
@@ -77,53 +87,30 @@ package org.aisy.scroller
 					break;
 			}
 			if (getData().isMouseDown === true) {
-				if (getData().isScrollV === true) {
-					var _y:Number = -getData().obj.height + getData().height;
-					if (getData().obj.y < _y) {
-						getData().obj.y = _y;
-					}
+				if (getData().isScrollH === false) getData().obj.x = 0;
+				if (getData().isScrollV === false) getData().obj.y = 0;
+				if ((AisySkin.MOBILE === true || getData().mobile === true) && getData().mode !== 0) {
+					Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
+					Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
 				}
 				else {
-					getData().obj.y = 0;
+					getData().moveRect = null;
 				}
-				if (getData().isScrollH === true) {
-					var _x:Number = -getData().obj.width + getData().width;
-					if (getData().obj.x < _x) {
-						getData().obj.x = _x;
-					}
-				}
-				else {
-					getData().obj.x = 0;
-				}
-				if (AisySkin.MOBILE === true && getData().position === true) {
-					var _sX:Number = getData().startX;
-					var _sY:Number = getData().startY;
-					__mouseHandler(new MouseEvent(MouseEvent.MOUSE_DOWN));
-					getData().startX = _sX;
-					getData().startY = _sY;
-				}
-			}
-			else {
-				getData().obj.x = getData().obj.y = 0;
 			}
 		}
 		
 		/**
-		 * 
 		 * 注册侦听
-		 * 
 		 */
 		protected function __addEvent():void
 		{
-			if (AisySkin.MOBILE === true && getData().position === true) {
+			if ((AisySkin.MOBILE === true || getData().mobile === true) && getData().mode !== 0) {
 				addEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
 			}
 		}
 		
 		/**
-		 * 
 		 * 移除侦听
-		 * 
 		 */
 		protected function __removeEvent():void
 		{
@@ -134,80 +121,100 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
 		 * 鼠标侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		protected function __mouseHandler(e:MouseEvent):void
 		{
-			if (getData().enabled === false || AisySkin.MOBILE === false || getData().position === false) return;
+			if (getData().enabled === false || (AisySkin.MOBILE === false && getData().mobile === false) || getData().mode === 0) return;
 			switch (e.type) {
 				case MouseEvent.MOUSE_DOWN:
 					getData().isMouseDown = true;
-					getData().moveDelay = 0;
+					getData().moveDuration = 0;
 					getData().moveX = 0;
 					getData().moveY = 0;
 					getData().startX = e.stageX;
 					getData().startY = e.stageY;
-					getDefinitionByName("com.greensock.TweenLite").killTweensOf(getData().obj);
+					getData().mouseX = e.stageX - getData().obj.x;
+					getData().mouseY = e.stageY - getData().obj.y;
+					getDefinitionByName(AisySkin.TWEEN_LITE).killTweensOf(getData().obj);
 					Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
 					Ais.IMain.stage.addEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
-					var _pw:Number = getData().isScrollH === true ? getData().obj.width : 0;
-					var _ph:Number = getData().isScrollV === true ? getData().obj.height : 0;
-					var _w:Number = getData().isScrollH === true ? width : 0;
-					var _h:Number = getData().isScrollV === true ? height : 0;
-					getData().obj.startDrag(false, new Rectangle(-_pw, -_ph, _pw + _w, _ph + _h));
+					var _x:Number = getData().isScrollH === true ? width - getData().obj.width : 0;
+					var _y:Number = getData().isScrollV === true ? height - getData().obj.height : 0;
+					getData().moveRect = new Rectangle(_x, _y, 0, 0);
 					break;
 				case MouseEvent.MOUSE_MOVE:
 					if (null === getData().moveMask) {
 						getData().moveMask = new USprite();
-						getData().moveMask.graphics.beginFill(0xff0000, 0);
+						getData().moveMask.graphics.beginFill(0xFF0000, 0);
 						getData().moveMask.graphics.drawRect(0, 0, width, height);
 						getData().moveMask.graphics.endFill();
 						addChild(getData().moveMask);
 					}
-					var _mX:Number = Math.round(getData().startX - e.stageX) * getData().moveFactor;
-					var _mY:Number = Math.round(getData().startY - e.stageY) * getData().moveFactor;
-					getData().moveX = _mX !== 0 ? _mX : getData().moveX;
-					getData().moveY = _mY !== 0 ? _mY : getData().moveY;
-					
-					getData().moveDelay = Math.max(Math.abs(getData().moveX), Math.abs(getData().moveY)) / height;
+					if (getData().isScrollH === true) {
+						_x = Ais.IMain.stage.mouseX - getData().mouseX;
+						if (_x < getData().moveRect.x) _x = getData().moveRect.x + (_x - getData().moveRect.x) * getData().overflowH;
+						else if (_x > getData().moveRect.width) _x = getData().moveRect.width + (_x - getData().moveRect.width) * getData().overflowH;
+						getData().obj.x = _x;
+					}
+					if (getData().isScrollV === true) {
+						_y = Ais.IMain.stage.mouseY - getData().mouseY;
+						if (_y < getData().moveRect.y) _y = getData().moveRect.y + (_y - getData().moveRect.y) * getData().overflowV;
+						else if (_y > getData().moveRect.height) _y = getData().moveRect.height + (_y - getData().moveRect.height) * getData().overflowV;
+						getData().obj.y = _y;
+					}
+					_x = Math.round(getData().startX - e.stageX) * getData().moveFactor;
+					_y = Math.round(getData().startY - e.stageY) * getData().moveFactor;
+					getData().moveX = _x !== 0 ? _x : getData().moveX;
+					getData().moveY = _y !== 0 ? _y : getData().moveY;
 					
 					getData().startX = e.stageX;
 					getData().startY = e.stageY;
 					
-					if (null !== getData().scrollV) getData().scrollV.layoutScroll();
-					if (null !== getData().scrollH) getData().scrollH.layoutScroll();
+					if (getData().isScrollH === true) {
+						getData().scrollH.updateView(true);
+						getData().scrollH.layoutScroll(0, 0, 0);
+					}
+					if (getData().isScrollV === true) {
+						getData().scrollV.updateView(true);
+						getData().scrollV.layoutScroll(0, 0, 0);
+					}
 					break;
 				case MouseEvent.MOUSE_UP:
 					Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
 					Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
 					getData().isMouseDown = false;
-					getData().obj.stopDrag();
+					getData().moveRect = null;
 					
 					if (null !== getData().moveMask) {
 						getData().moveMask.clear();
 						getData().moveMask = null;
 					}
 					
-					getData().moveX = Math.abs(getData().moveX) > getData().moveFactor * 2 ? getData().moveX : 0;
-					getData().moveY = Math.abs(getData().moveY) > getData().moveFactor * 2 ? getData().moveY : 0;
+					getData().moveX = Math.abs(getData().moveX) > getData().moveDistance ? getData().moveX : 0;
+					getData().moveY = Math.abs(getData().moveY) > getData().moveDistance ? getData().moveY : 0;
+					_x = getData().isScrollH === true ? Math.abs(getData().moveX / width) : 0;
+					_y = getData().isScrollV === true ? Math.abs(getData().moveY / height) : 0;
+					getData().moveX = getData().obj.x - getData().moveX;
+					getData().moveY = getData().obj.y - getData().moveY;
+					_x = getData().moveX > 0 ? 0 : _x;
+					_y = getData().moveY > 0 ? 0 : _y;
+					_x = getData().moveX < getData().width - getData().obj.width ? 0 : _x;
+					_y = getData().moveY < getData().height - getData().obj.height ? 0 : _y;
+					getData().moveDuration = Math.max(_x, _y) * getData().moveDurationFactor;
+					getData().moveDuration = getData().moveDuration > getData().moveDurationMax ? getData().moveDurationMax : getData().moveDuration;
 					
-					layoutScroll(getData().obj.x - getData().moveX, getData().obj.y - getData().moveY, 0);
+					layoutScroll(getData().moveX, getData().moveY, 0, -1, 1);
 					break;
 			}
 		}
 		
 		/**
-		 * 
-		 * 设置滚动对象
-		 * 
+		 * 设置 滚动对象
 		 * @param value
 		 * @param layout
 		 * @param elastic
-		 * 
 		 */
 		public function setSource(value:Sprite, layout:uint = 0, elastic:Boolean = true):void
 		{
@@ -216,38 +223,38 @@ package org.aisy.scroller
 			if (null !== getData().group) {
 				getData().obj.mask = null;
 				getData().mask = null;
-				var obj:*;
-				while (getData().group.numChildren) {
-					obj = getData().group.getChildAt(0);
+				var i:uint = getData().group.numChildren, obj:*;
+				while (i) {
+					i--;
+					obj = getData().group.getChildAt(i);
 					if (obj is IClear) obj.clear();
-					else getData().group.removeChildAt(0);
+					else removeChildAt(i);
 				}
 				obj = null;
 			}
 			else {
 				getData().group = new USprite();
-				addChild(getData().group);
+				addChildAt(getData().group, 0);
 			}
 			getData().obj = value;
 			getData().group.addChild(value);
 			
 			getData().mask = new Shape();
-			getData().mask.graphics.beginFill(0xff0000, 0.3);
+			getData().mask.graphics.beginFill(0xFF0000, 0.3);
 			getData().mask.graphics.drawRect(0, 0, 1, 1);
 			getData().mask.graphics.endFill();
 			getData().group.addChild(getData().mask);
 			
-			value.mask = getData().mask;
+			getData().group.mask = getData().mask;
+			
+//			__layout();
 			
 			value = null;
 		}
 		
 		/**
-		 * 
-		 * 返回滚动对象
-		 * 
+		 * 返回 滚动对象
 		 * @return 
-		 * 
 		 */
 		public function getSource():Sprite
 		{
@@ -255,11 +262,8 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置皮肤 DisplayObjectContainer 类名
-		 * 
+		 * 设置 皮肤 DisplayObjectContainer 类名
 		 * @param value
-		 * 
 		 */
 		public function setSkinClassName(value:String):void
 		{
@@ -268,11 +272,8 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置皮肤 DisplayObjectContainer 类
-		 * 
+		 * 设置 皮肤 DisplayObjectContainer 类
 		 * @param value
-		 * 
 		 */
 		public function setSkinClass(value:Class):void
 		{
@@ -295,15 +296,13 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置皮肤 DisplayObjectContainer
-		 * 
+		 * 设置 皮肤 DisplayObjectContainer
 		 * @param value
 		 * @param layout
-		 * 
 		 */
 		public function setSkin(value:DisplayObjectContainer, layout:uint = 1):void
 		{
+			getData().scroller = this;
 			if (layout === 1) {
 				getData().isScrollV = false;
 				if (getData().height < getData().obj.height) {
@@ -342,14 +341,11 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
 		 * 设置 布局样式
 		 * 当 layout = 0 时，设置（横向、竖向）布局
 		 * 当 layout = 1 时，设置（横向）布局
 		 * 当 layout = 2 时，设置（竖向）布局
-		 * 
 		 * @param layout
-		 * 
 		 */
 		public function setLayout(layout:uint = 0):void
 		{
@@ -357,15 +353,12 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
 		 * 设置 内部缩进
 		 * 当 layout = 0 时，设置（横向缩进、竖向缩进）
 		 * 当 layout = 1 时，设置（横向缩进）
 		 * 当 layout = 2 时，设置（竖向缩进）
-		 * 
 		 * @param padding
 		 * @param layout
-		 * 
 		 */
 		public function setPadding(padding:Number, layout:uint = 0):void
 		{
@@ -384,34 +377,94 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置是否绝对定位
-		 * 
+		 * 设置 滑块最小尺寸
+		 * 当 layout = 0 时，设置（横向尺寸、竖向尺寸）
+		 * 当 layout = 1 时，设置（横向尺寸）
+		 * 当 layout = 2 时，设置（竖向尺寸）
 		 * @param value
-		 * 
+		 * @param layout
 		 */
-		public function setPosition(value:Boolean):void
+		public function setDragMinSize(value:Number, layout:uint = 0):void
 		{
-			getData().position = value;
+			switch (layout) {
+				case 0:
+					getData().dragMinSizeH = value;
+					getData().dragMinSizeV = value;
+					break;
+				case 1:
+					getData().dragMinSizeH = value;
+					break;
+				case 2:
+					getData().dragMinSizeV = value;
+					break;
+			}
 		}
 		
 		/**
-		 * 
-		 * 设置滚动条显示
+		 * 设置 滑动溢出比例
+		 * 当 layout = 0 时，设置（横向比例、竖向比例）
+		 * 当 layout = 1 时，设置（横向比例）
+		 * 当 layout = 2 时，设置（竖向比例）
+		 * @param value
+		 * @param layout
+		 */
+		public function setOverflow(value:Number, layout:uint = 0):void
+		{
+			switch (layout) {
+				case 0:
+					getData().dragMinSizeH = value;
+					getData().dragMinSizeV = value;
+					break;
+				case 1:
+					getData().dragMinSizeH = value;
+					break;
+				case 2:
+					getData().dragMinSizeV = value;
+					break;
+			}
+		}
+		
+		/**
+		 * 设置 手机模式
+		 * @param value
+		 */
+		public function setMobile(value:Boolean):void
+		{
+			getData().mobile = value;
+		}
+		
+		/**
+		 * 设置 显示模式
+		 * @param value
+		 */
+		public function setMode(value:int):void
+		{
+			getData().mode = value;
+		}
+		
+		/**
+		 * 设置 当 alpha 为 0 时，是否自动移除显示
+		 * @param value
+		 */
+		public function setAutoAlpha(value:Boolean):void
+		{
+			getData().autoAlpha = value;
+		}
+		
+		/**
+		 * 设置 滚动条显示
 		 * 当 layout = 0 时，设置（横向、竖向）显示
 		 * 当 layout = 1 时，设置（横向）显示
 		 * 当 layout = 2 时，设置（竖向）显示
-		 * 
 		 * @param visible
 		 * @param layout
-		 * 
 		 */
 		public function setScrollVisible(visible:Boolean, layout:uint = 0):void
 		{
 			switch (layout) {
 				case 0:
-					if (null !== getData().scrollV) getData().scrollV.visible = visible;
 					if (null !== getData().scrollH) getData().scrollH.visible = visible;
+					if (null !== getData().scrollV) getData().scrollV.visible = visible;
 					break;
 				case 1:
 					if (null !== getData().scrollV) getData().scrollV.visible = visible;
@@ -423,25 +476,19 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置是否可用
-		 * 
+		 * 设置 是否可用
 		 * @param value
-		 * 
 		 */
 		public function setEnabled(value:Boolean):void
 		{
 			getData().enabled = value;
-			if (null !== getData().scrollV) getData().scrollV.visible = value;
 			if (null !== getData().scrollH) getData().scrollH.visible = value;
+			if (null !== getData().scrollV) getData().scrollV.visible = value;
 		}
 		
 		/**
-		 * 
-		 * 设置按钮滚动速度
-		 * 
+		 * 设置 up down 滚动速度
 		 * @param value
-		 * 
 		 */
 		public function setSpeed(value:Number):void
 		{
@@ -449,11 +496,8 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置滚轮滚动速度
-		 * 
+		 * 设置 滚轮滚动速度
 		 * @param value
-		 * 
 		 */
 		public function setDelta(value:Number):void
 		{
@@ -461,23 +505,71 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置滚动延迟
-		 * 
+		 * 设置 滚动持续时间
 		 * @param value
-		 * 
 		 */
-		public function setDelay(value:Number):void
+		public function setScrollDuration(value:Number):void
 		{
-			getData().delay = value;
+			getData().scrollDuration = value;
 		}
 		
 		/**
-		 * 
-		 * 设置滑动因子
-		 * 
+		 * 设置 up down 按下后延迟响应时间
 		 * @param value
-		 * 
+		 */
+		public function setUpDownDelay(value:Number):void
+		{
+			getData().upDownDelay = value;
+		}
+		
+		/**
+		 * 设置 up down 按下后的滚动持续时间
+		 * @param value
+		 */
+		public function setUpDownDuration(value:Number):void
+		{
+			getData().upDownDuration = value;
+		}
+		
+		/**
+		 * 设置 显示持续时间
+		 * @param value
+		 */
+		public function setScrollShowDuration(value:Number):void
+		{
+			getData().scrollShowDuration = value;
+		}
+		
+		/**
+		 * 设置 隐藏持续时间
+		 * @param value
+		 */
+		public function setScrollHideDuration(value:Number):void
+		{
+			getData().scrollHideDuration = value;
+		}
+		
+		/**
+		 * 设置 最大滑动持续时间
+		 * @param value
+		 */
+		public function setMoveDurationMax(value:Number):void
+		{
+			getData().moveDurationMax = value;
+		}
+		
+		/**
+		 * 设置 滑动持续时间因子
+		 * @param value
+		 */
+		public function setMoveDurationFactor(value:Number):void
+		{
+			getData().moveDurationFactor = value;
+		}
+		
+		/**
+		 * 设置 滑动因子
+		 * @param value
 		 */
 		public function setMoveFactor(value:Number):void
 		{
@@ -485,12 +577,18 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
-		 * 设置显示宽度，高度
-		 * 
+		 * 设置 滑动距离
+		 * @param value
+		 */
+		public function setMoveDistance(value:Number):void
+		{
+			getData().moveDistance = value;
+		}
+		
+		/**
+		 * 设置 显示宽度，高度
 		 * @param width
 		 * @param height
-		 * 
 		 */
 		public function setSize(width:Number = 0, height:Number = 0):void
 		{
@@ -500,44 +598,97 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
 		 * 计算滚动条位置
-		 * 
 		 * @param x
 		 * @param y
 		 * @param layout
-		 * 
+		 * @param duration
+		 * @param updateViewType
+		 * @param type
 		 */
-		public function layoutScroll(x:Number = 0, y:Number = 0, layout:uint = 0):void
+		public function layoutScroll(x:Number = 0, y:Number = 0, layout:uint = 0, duration:Number = -1, updateViewType:int = 0, type:int = 1):void
 		{
-			var _x:Number = -getData().obj.width + getData().width;
-			var _y:Number = -getData().obj.height + getData().height;
+			duration = duration !== -1 ? duration : getData().scrollDuration + getData().moveDuration;
+			var b:Boolean = updateViewType === 1 ? true : false;
+			var _x:Number = getData().width - getData().obj.width;
+			var _y:Number = getData().height - getData().obj.height;
 			x = x > 0 ? 0 : x;
 			y = y > 0 ? 0 : y;
 			x = x < _x ? _x : x;
 			y = y < _y ? _y : y;
 			x = getData().isScrollH === true ? x : 0;
 			y = getData().isScrollV === true ? y : 0;
+			var f:Function = function ():void
+			{
+				switch (layout) {
+					case 0:
+						if (getData().isScrollH === true) if (updateViewType !== 0) getData().scrollH.updateView(b);
+						if (getData().isScrollV === true) if (updateViewType !== 0) getData().scrollV.updateView(b);
+						break;
+					case 1:
+						if (getData().isScrollV === true) if (updateViewType !== 0) getData().scrollV.updateView(b);
+						break;
+					case 2:
+						if (getData().isScrollH === true) if (updateViewType !== 0) getData().scrollH.updateView(b);
+						break;
+				}
+			};
 			switch (layout) {
 				case 0:
-					if (null !== getData().scrollV) getData().scrollV.layoutScroll(y, 1);
-					if (null !== getData().scrollH) getData().scrollH.layoutScroll(x, 1);
+					if (getData().isScrollH === true) getData().scrollH.layoutScroll(x, type, duration);
+					if (getData().isScrollV === true) getData().scrollV.layoutScroll(y, type, duration);
 					break;
 				case 1:
-					if (null !== getData().scrollV) getData().scrollV.layoutScroll(y, 1);
+					if (getData().isScrollV === true) getData().scrollV.layoutScroll(y, type, duration);
 					break;
 				case 2:
-					if (null !== getData().scrollH) getData().scrollH.layoutScroll(x, 1);
+					if (getData().isScrollH === true) getData().scrollH.layoutScroll(x, type, duration);
 					break;
 			}
-			getDefinitionByName("com.greensock.TweenLite").to(getData().obj, getData().delay + getData().moveDelay, {"x": x, "y": y});
+			getDefinitionByName(AisySkin.TWEEN_LITE).to(getData().obj, duration, {x: x, y: y, onUpdate: f, onComplete: f});
+			f = null;
+		}
+		
+		public function getScrollH():ScrollBar
+		{
+			return getData().scrollH;
+		}
+		
+		public function getScrollV():ScrollBar
+		{
+			return getData().scrollV;
 		}
 		
 		/**
-		 * 
-		 * 返回是否可用
+		 * 返回 手机模式
 		 * @return 
-		 * 
+		 */
+		public function getMobile():Boolean
+		{
+			return getData().mobile;
+		}
+		
+		/**
+		 * 返回 显示模式
+		 * @return 
+		 */
+		public function getMode():int
+		{
+			return getData().mode;
+		}
+		
+		/**
+		 * 返回 当 alpha 为 0 时，是否自动移除显示
+		 * @return 
+		 */
+		public function getAutoAlpha():Boolean
+		{
+			return getData().autoAlpha;
+		}
+		
+		/**
+		 * 返回 是否可用
+		 * @return 
 		 */
 		public function getEnabled():Boolean
 		{
@@ -545,9 +696,106 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
+		 * 返回 up down 滚动速度
+		 * @return 
+		 */
+		public function getSpeed():Number
+		{
+			return getData().speed;
+		}
+		
+		/**
+		 * 返回 滚轮滚动速度
+		 * @return 
+		 */
+		public function getDelta():Number
+		{
+			return getData().delta;
+		}
+		
+		/**
+		 * 返回 滚动持续时间
+		 * @return 
+		 */
+		public function getScrollDuration():Number
+		{
+			return getData().scrollDuration;
+		}
+		
+		/**
+		 * 返回 up down 按下后延迟响应时间
+		 * @return 
+		 */
+		public function getUpDownDelay():Number
+		{
+			return getData().upDownDelay;
+		}
+		
+		/**
+		 * 返回 up down 按下后的滚动持续时间
+		 * @return 
+		 */
+		public function getUpDownDuration():Number
+		{
+			return getData().upDownDuration;
+		}
+		
+		/**
+		 * 返回 显示持续时间
+		 * @return 
+		 */
+		public function getScrollShowDuration():Number
+		{
+			return getData().scrollShowDuration;
+		}
+		
+		/**
+		 * 返回 隐藏持续时间
+		 * @return 
+		 */
+		public function getScrollHideDuration():Number
+		{
+			return getData().scrollHideDuration;
+		}
+		
+		/**
+		 * 返回 最大滑动持续时间
+		 * @return 
+		 */
+		public function getMoveDurationMax():Number
+		{
+			return getData().moveDurationMax;
+		}
+		
+		/**
+		 * 返回 滑动持续时间因子
+		 * @return 
+		 */
+		public function getMoveDurationFactor():Number
+		{
+			return getData().moveDurationFactor;
+		}
+		
+		/**
+		 * 返回 滑动因子
+		 * @return 
+		 */
+		public function getMoveFactor():Number
+		{
+			return getData().moveFactor;
+		}
+		
+		/**
+		 * 返回 滑动距离
+		 * @return 
+		 */
+		public function getMoveDistance():Number
+		{
+			return getData().moveDistance;
+		}
+		
+		/**
 		 * 更新显示
-		 * 
 		 */
 		public function updateView():void
 		{
@@ -567,9 +815,7 @@ package org.aisy.scroller
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{

@@ -15,7 +15,7 @@ package org.aisy.autoclear
 		/**
 		 * AutoClear 集合
 		 */
-		static protected var autoClears:Vector.<AisyAutoClear>;
+		static protected var autoClears:Array;
 		/**
 		 * 当前 AutoClear
 		 */
@@ -23,7 +23,7 @@ package org.aisy.autoclear
 		/**
 		 * IClear 集合
 		 */
-		protected var v:Vector.<IClear>;
+		protected var v:Array;
 		/**
 		 * 是否正在清除
 		 */
@@ -31,32 +31,26 @@ package org.aisy.autoclear
 		
 		public function AisyAutoClear()
 		{
-			if (null === autoClears) autoClears = new Vector.<AisyAutoClear>();
+			if (null === autoClears) autoClears = [];
 			autoClears[autoClears.length] = currentAutoClear = this;
 		}
 		
 		/**
-		 * 
 		 * 添加一个 IClear
-		 * 
 		 * @param iclear
-		 * 
 		 */
 		public function put(iclear:IClear):void
 		{
 			if (null === iclear) return;
-			else if (null === v) v = new Vector.<IClear>();
+			else if (null === v) v = [];
 			if (v.lastIndexOf(iclear) === -1) v[v.length] = iclear;
 			iclear = null;
 		}
 		
 		/**
-		 * 
 		 * 移除一个 IClear
-		 * 
 		 * @param iclear
 		 * @return 
-		 * 
 		 */
 		public function remove(iclear:IClear):Boolean
 		{
@@ -74,12 +68,9 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 是否包含一个 ICler
-		 * 
 		 * @param iclear
 		 * @return 
-		 * 
 		 */
 		public function has(iclear:IClear):Boolean
 		{
@@ -89,9 +80,7 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 清除所有的 IClear
-		 * 
 		 */
 		public function clear():void
 		{
@@ -104,7 +93,7 @@ package org.aisy.autoclear
 			if (null !== currentAutoClear) {
 				var j:int = autoClears.lastIndexOf(this);
 				if (j !== -1) {
-					if (j === 0) {
+					if (autoClears.length === 1) {
 						autoClears = null;
 						currentAutoClear = null;
 					}
@@ -119,11 +108,8 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 创建一个新的 AutoClear
-		 * 
 		 * @return 
-		 * 
 		 */
 		static public function newAutoClear():AisyAutoClear
 		{
@@ -131,11 +117,8 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 将 autoClear 设置为当前的 AutoClear
-		 * 
 		 * @param autoClear
-		 * 
 		 */
 		static public function setCurrentAutoClear(autoClear:AisyAutoClear):void
 		{
@@ -148,11 +131,8 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 返回当前的 AutoClear
-		 * 
 		 * @return 
-		 * 
 		 */
 		static public function getCurrentAutoClear():AisyAutoClear
 		{
@@ -160,11 +140,8 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 添加一个 IClear 到当前的 AutoClear 中
-		 * 
 		 * @param iclear
-		 * 
 		 */
 		static public function put(iclear:IClear):void
 		{
@@ -175,12 +152,9 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 在全部 AutoClear 中移除一个 IClear
-		 * 
 		 * @param iclear
 		 * @return 
-		 * 
 		 */
 		static public function remove(iclear:IClear):Boolean
 		{
@@ -199,12 +173,9 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 在全部 AutoClear 中是否包含一个 IClear
-		 * 
 		 * @param iclear
 		 * @return 
-		 * 
 		 */
 		static public function has(iclear:IClear):Boolean
 		{
@@ -223,9 +194,7 @@ package org.aisy.autoclear
 		}
 		
 		/**
-		 * 
 		 * 清除所有的 AutoClear
-		 * 
 		 */
 		static public function clear():void
 		{

@@ -22,11 +22,10 @@ package org.aisy.utils
 		static public var useEmbedFont:Boolean;
 		static public var useEmbedDefaultFont:Boolean;
 		static public var antiAliasType:String = AntiAliasType.NORMAL;
-		
-		static protected var _fontMap:Dictionary;
-		static protected var _allFonts:Dictionary;
-		static protected var _deviceFonts:Vector.<String>;
-		static protected var _embedFonts:Vector.<String>;
+		static public var fontMap:Dictionary;
+		static public var allFonts:Dictionary;
+		static public var deviceFonts:Array;
+		static public var embedFonts:Array;
 		
 		public function FontUtil()
 		{
@@ -35,22 +34,22 @@ package org.aisy.utils
 		static public function initialize():void
 		{
 			var edf:String, arr:Array = Font.enumerateFonts(true), f:Font;;
-			if (null !== _embedFonts) edf = getEmbedDefaultFontName();
+			if (null !== embedFonts) edf = getEmbedDefaultFontName();
 			initialized = true;
-			_allFonts = new Dictionary();
-			_deviceFonts = new Vector.<String>();
-			_embedFonts = new Vector.<String>();
+			allFonts = new Dictionary();
+			deviceFonts = [];
+			embedFonts = [];
 			for (var i:uint = 0, j:uint = 0, k:uint = 0, l:uint = arr.length; i < l; i++) {
 				f = arr[i];
 				if (f.fontType === FontType.DEVICE) {
-					_deviceFonts[j] = f.fontName;
+					deviceFonts[j] = f.fontName;
 					j++;
 				}
-				else if (_embedFonts.lastIndexOf(f.fontName) === -1) {
-					_embedFonts[k] = f.fontName;
+				else if (embedFonts.lastIndexOf(f.fontName) === -1) {
+					embedFonts[k] = f.fontName;
 					k++;
 				}
-				_allFonts[f.fontName] = f;
+				allFonts[f.fontName] = f;
 			}
 			if (null !== edf) setEmbedDefaultFontName(edf);
 			edf = null;
@@ -58,31 +57,24 @@ package org.aisy.utils
 			f = null;
 		}
 		
-		static public function setFontMap(fontMap:Dictionary):void
-		{
-			_fontMap = fontMap;
-			fontMap = null;
-		}
-		
 		static public function setEmbedDefaultFontName(value:String):Boolean
 		{
-			var i:int = _embedFonts.lastIndexOf(value);
+			var i:int = embedFonts.indexOf(value);
 			if (i === -1) return false;
-			_embedFonts.splice(i, 1);
-			_embedFonts[_embedFonts.length] = value;
+			embedFonts.splice(i, 1);
+			embedFonts.unshift(value);
 			value = null;
 			return true;
 		}
 		
 		static protected function getEmbedDefaultFontName():String
 		{
-			var l:uint = _embedFonts.length;
-			return l !== 0 ? _embedFonts[l - 1] : null;
+			return embedFonts.length !== 0 ? embedFonts[0] : null;
 		}
 		
 		static protected function getEmbedFontName(fontName:String, textField:TextField):String
 		{
-			if (null !== _fontMap && _fontMap[fontName]) fontName = _fontMap[fontName];
+			if (null !== fontMap && fontMap[fontName]) fontName = fontMap[fontName];
 			if (/\~$/.test(fontName) === true) {
 				if (textField.embedFonts === true) return null;
 			}
@@ -106,31 +98,31 @@ package org.aisy.utils
 			return fontName;
 		}
 		
-		static public function getFontName(v:Vector.<String>, type:uint = 0):String
+		static public function getFontName(v:Object, type:uint = 0, defaultFontName:String = "Microsoft YaHei"):String
 		{
 			for (var i:uint = 0, l:uint = v.length; i < l; i++) {
-				if (_allFonts.hasOwnProperty(v[i]) === true) {
+				if (allFonts.hasOwnProperty(v[i]) === true) {
 					if (type === 0) return v[i];
-					else if ((Font(_allFonts[v[i]]).fontType === FontType.DEVICE ? 1 : 2) === type) return v[i];
+					else if ((Font(allFonts[v[i]]).fontType === FontType.DEVICE ? 1 : 2) === type) return v[i];
 				}
 			}
 			v = null;
-			return null;
+			return defaultFontName;
 		}
 		
 		static public function hasFontInAll(fontName:String):Boolean
 		{
-			return _allFonts.hasOwnProperty(fontName);
+			return allFonts.hasOwnProperty(fontName);
 		}
 		
 		static public function hasFontInDevice(fontName:String):Boolean
 		{
-			return _deviceFonts.lastIndexOf(fontName) !== -1;
+			return deviceFonts.lastIndexOf(fontName) !== -1;
 		}
 		
 		static public function hasFontInEmbed(fontName:String):Boolean
 		{
-			return _embedFonts.lastIndexOf(fontName + "~") !== -1;
+			return embedFonts.lastIndexOf(fontName + "~") !== -1;
 		}
 		
 		static public function embedFont(textField:TextField):void
@@ -198,7 +190,7 @@ package org.aisy.utils
 		{
 			var fn:String = textField.defaultTextFormat.font;
 			if (/\~$/.test(fn)) {
-				var f:Font = _allFonts[fn];
+				var f:Font = allFonts[fn];
 				if (null !== f) {
 					if (f.hasGlyphs(textField.text.replace(/[\s\n\r\t]/g, "")) === false) {
 						textField.embedFonts = false;
@@ -239,10 +231,10 @@ package org.aisy.utils
 			useEmbedFont = false;
 			useEmbedDefaultFont = false;
 			antiAliasType = null;
-			_fontMap = null;
-			_allFonts = null;
-			_deviceFonts = null;
-			_embedFonts = null;
+			fontMap = null;
+			allFonts = null;
+			deviceFonts = null;
+			embedFonts = null;
 		}
 		
 	}

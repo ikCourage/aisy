@@ -1,5 +1,6 @@
 package org.aisy.ulist
 {
+	import flash.display.DisplayObject;
 	import flash.events.MouseEvent;
 	
 	import org.ais.event.TEvent;
@@ -34,23 +35,17 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 注册侦听
-		 * 
 		 */
 		private function __addEvent():void
 		{
 			addEventListener(MouseEvent.CLICK, __mouseHandler);
-			
 			TEvent.newTrigger(NAME, __triggerHandler);
 		}
 		
 		/**
-		 * 
 		 * 鼠标侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		private function __mouseHandler(e:MouseEvent):void
 		{
@@ -60,15 +55,12 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 舞台鼠标侦听
-		 * 
 		 * @param e
-		 * 
 		 */
 		private function __stageMouseHandler(e:MouseEvent):void
 		{
-			var obj:* = Object(e.target);
+			var obj:DisplayObject = e.target as DisplayObject;
 			if (iparent().getGroup().contains(obj) === true) {
 				
 			}
@@ -83,9 +75,7 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 隐藏列表
-		 * 
 		 */
 		private function hideList():void
 		{
@@ -94,11 +84,8 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 父元件 UList
-		 * 
 		 * @return 
-		 * 
 		 */
 		private function iparent():UList
 		{
@@ -106,12 +93,9 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 全局侦听
-		 * 
 		 * @param type
 		 * @param data
-		 * 
 		 */
 		protected function __triggerHandler(type:String, data:* = null):void
 		{
@@ -125,9 +109,7 @@ package org.aisy.ulist
 		}
 		
 		/**
-		 * 
 		 * 清空
-		 * 
 		 */
 		override public function clear():void
 		{
