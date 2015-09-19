@@ -63,6 +63,13 @@ package org.aisy.image
 		 */
 		protected var _smoothing:Boolean;
 		/**
+		 * 缩放类型
+		 * 0: 不等比例缩放（默认）
+		 * 1: 内等比例缩放
+		 * 2: 外等比例缩放
+		 */
+		protected var _scaleType:int;
+		/**
 		 * 自定义宽度
 		 */
 		protected var _width:Number = 0;
@@ -215,11 +222,38 @@ package org.aisy.image
 			var obj:DisplayObject = getChildAt(0);
 			var w:Number = _width !== 0 ? _width : obj.width;
 			var h:Number = _height !== 0 ? _height : obj.height;
+			var w2:Number = w;
+			var h2:Number = h;
+			var vsc:Number;
 			for (var i:uint = 0; i < len; i++) {
 				obj = getChildAt(i);
 				if (obj !== _loading) {
-					obj.width = w;
-					obj.height = h;
+					switch (_scaleType) {
+						case 1:
+							vsc = obj.width / obj.height;
+							if (vsc > w / h) {
+								w2 = w;
+								h2 = 1 / vsc * w;
+							}
+							else {
+								h2 = h;
+								w2 = vsc * h;
+							}
+							break;
+						case 2:
+							vsc = obj.width / obj.height;
+							if (vsc < w / h) {
+								w2 = w;
+								h2 = 1 / vsc * w;
+							}
+							else {
+								h2 = h;
+								w2 = vsc * h;
+							}
+							break;
+					}
+					obj.width = w2;
+					obj.height = h2;
 				}
 			}
 			if (null !== _loading) {
@@ -248,12 +282,14 @@ package org.aisy.image
 		 * @param width
 		 * @param height
 		 * @param smoothing
+		 * @param scaleType 缩放类型 0: 不等比例缩放（默认），1: 内等比例缩放，2: 外等比例缩放
 		 */
-		public function setSize(width:Number = 0, height:Number = 0, smoothing:Boolean = false):void
+		public function setSize(width:Number = 0, height:Number = 0, smoothing:Boolean = false, scaleType:int = 0):void
 		{
 			_width = width;
 			_height = height;
 			_smoothing = smoothing;
+			_scaleType = scaleType;
 			__setSize();
 		}
 		
