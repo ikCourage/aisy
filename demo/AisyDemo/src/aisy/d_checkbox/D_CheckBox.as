@@ -6,6 +6,7 @@ package aisy.d_checkbox
 	import org.aisy.button.Button;
 	import org.aisy.display.USprite;
 	import org.aisy.listoy.Listoy;
+	import org.aisy.listoy.ListoyEnum;
 	import org.aisy.listoy.ListoyEvent;
 
 	public class D_CheckBox extends USprite
@@ -33,6 +34,7 @@ package aisy.d_checkbox
 			for (var i:int = 0; i < 30; i++) arr[arr.length] = "多选框 " + (i + 1);
 			
 			_listoy = new Listoy();
+			_listoy.setMode(ListoyEnum.MODE_PAGE);
 			_listoy.setRowColumn(3, 3);
 			_listoy.x = _listoy.y = 20;
 			

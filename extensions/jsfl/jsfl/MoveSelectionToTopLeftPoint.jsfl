@@ -13,9 +13,8 @@ if (dom) {
 	var lib = dom.library;
 	
 	dom.selectAll();
-	var arr = dom.selection;
-	var l = arr.length;
-	if (l) {
+	
+	if (dom.selection.length) {
 		var rect = dom.getSelectionRect();
 		dom.moveSelectionBy({"x": -round(rect.left), "y": -round(rect.top)});
 		dom.selectNone();
@@ -23,22 +22,21 @@ if (dom) {
 }
 
 function round(d) {
-	d = d.toString();
-	var i = d.lastIndexOf(".");
-	if (i != -1) {
-		var a = parseInt(d.substr(++i));
+	if (d != parseInt(d)) {
+		d = d.toString();
+		var l = d.lastIndexOf(".") + 1;
+		var a = parseInt(d.substr(l));
+		d = parseFloat(d);
 		if (a % 5 != 0) {
 			a = a.toString();
-			i = a.length;
-			d = parseInt(d);
+			l = a.length;
 			var b = 1;
-			for (var j = 0; j < i; j++) {
+			for (var i = 0; i < l; i++) {
 				b *= 10;
 			}
 			a = Math.round(parseInt(a) * 0.1) * 10 / b;
-			d += d < 0 ? a : -a;
-			return d;
+			d = parseInt(d) + (d < 0 ? -a : a);
 		}
 	}
-	return parseFloat(d);
+	return d;
 }

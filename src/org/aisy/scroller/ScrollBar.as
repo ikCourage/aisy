@@ -38,10 +38,6 @@ package org.aisy.scroller
 		 */
 		protected var _scrollSkin:DisplayObjectContainer;
 		/**
-		 * 滚动高度
-		 */
-		protected var _scrollHeight:Number;
-		/**
 		 * 布局方向
 		 */
 		protected var _layout:uint;
@@ -70,7 +66,7 @@ package org.aisy.scroller
 		/**
 		 * 计算布局
 		 */
-		protected function __layout(b:Boolean = false):void
+		protected function __layout():void
 		{
 			if (null === iData.mask || null === _scrollSkin) return;
 			mouseChildren = mouseEnabled = iData.mode === 2 ? false : true;
@@ -107,7 +103,7 @@ package org.aisy.scroller
 			}
 			var _dragY2:Number = _drag.y;
 			_drag.y = 0;
-			_scrollHeight = _line.height - _drag.height;
+			var _scrollHeight:Number = _line.height - _drag.height;
 			_drag.y = _dragY2;
 			if (_layout === 1) {
 				if (iData.mode !== 0) _scrollSkin.x = iData.width - _scrollSkin.width;
@@ -117,14 +113,15 @@ package org.aisy.scroller
 				if (iData.mode !== 0) _scrollSkin.y = iData.height;
 				else _scrollSkin.y = iData.height + _scrollSkin.height + iData.paddingV;
 			}
-			if (iData.isMouseDown === true || b === true) {
+			if (iData.isMouseDown === true || _isShowing === true) {
 				var _rLength:Number = iData[_length] - iData.obj[_length];
 				var _lengthP:Number = _rLength / _scrollHeight;
-				if (iData.mode !== 0) {
+				if (iData.mode === 2) {
 					var p:Number = iData.obj[_coor];
 					p = p > 0 ? 0 : p;
 					p = p < _rLength ? _rLength : p;
 					_drag.y = p / _lengthP;
+					_isMouseDown = false;
 				}
 				else if (_isMouseDown === true) {
 					_drag.y = _dragY;
@@ -135,6 +132,7 @@ package org.aisy.scroller
 				}
 				else {
 					iData.obj[_coor] = 0;
+					if (iData.mode !== 0) getDefinitionByName(AisySkin.TWEEN_LITE).to(this, iData.scrollShowDuration, {alpha: 1, onComplete: __tweenCompleteHandler});
 				}
 			}
 			else {
@@ -154,12 +152,13 @@ package org.aisy.scroller
 			var _length:String = _layout === 1 ? "height" : "width";
 			var _rLength:Number = iData[_length] - iData.obj[_length];
 			if (_rLength === 0) return;
+			var d:Object = {};
+			var _drag:Sprite = _scrollSkin["line"]["drag"] as Sprite;
+			var _scrollHeight:Number = _scrollSkin["line"].height - _drag.height;
 			var _lengthP:Number = _rLength / _scrollHeight;
 			var _coor:String = _layout === 1 ? "y" : "x";
 			var _duration:Number = iData.scrollDuration + iData.moveDuration;
 			if (_duration < 0) _duration = 0;
-			var _drag:Sprite = _scrollSkin["line"]["drag"] as Sprite;
-			var d:Object = {};
 			p = p > 0 ? 0 : p;
 			p = p < _rLength ? _rLength : p;
 			var _dragY:Number = p / _lengthP;
@@ -201,14 +200,14 @@ package org.aisy.scroller
 		 */
 		protected function __tweenCompleteHandler():void
 		{
-			if (_isRollOver === false && null !== iData) {
+			if (_isRollOver === false && _isMouseDown === false && null !== iData) {
 				if (null !== _utimer2) {
 					_utimer2.clear();
 					_utimer2 = null;
 				}
 				_utimer2 = new UTimer();
 				_utimer2.setRepeatCount(1);
-				_utimer2.setDelay(iData.scrollShowDuration);
+				_utimer2.setDelay(iData.scrollShowDuration * 1000);
 				_utimer2.setComplete(__tweenCompleteHandler2);
 				_utimer2.start();
 			}
@@ -223,7 +222,7 @@ package org.aisy.scroller
 				_utimer2.clear();
 				_utimer2 = null;
 			}
-			if (_isRollOver === false && null !== iData) {
+			if (_isRollOver === false && _isMouseDown === false && null !== iData) {
 				if (null !== _scrollSkin && _scrollSkin.hasOwnProperty("hide") === true) {
 					var f:Function = _scrollSkin["hide"];
 					f.apply(null, [iData.scrollHideDuration].slice(0, f.length));
@@ -235,11 +234,12 @@ package org.aisy.scroller
 		
 		protected function __tweenUpdateHandler():void
 		{
+			var _drag:Sprite = _scrollSkin["line"]["drag"] as Sprite;
+			var _scrollHeight:Number = _scrollSkin["line"].height - _drag.height;
 			var _coor:String = _layout === 1 ? "y" : "x";
 			var _length:String = _layout === 1 ? "height" : "width";
 			var _rLength:Number = iData[_length] - iData.obj[_length];
 			var _lengthP:Number = _rLength / _scrollHeight;
-			var _drag:Sprite = _scrollSkin["line"]["drag"] as Sprite;
 			iData.obj[_coor] = _drag.y * _lengthP;
 		}
 		
@@ -254,10 +254,11 @@ package org.aisy.scroller
 			_utimer.setDelay(iData.upDownDelay);
 			_utimer.setComplete(function ():void
 			{
+				var _drag:Sprite = _scrollSkin["line"]["drag"] as Sprite;
+				var _scrollHeight:Number = _scrollSkin["line"].height - _drag.height;
 				var _length:String = _layout === 1 ? "height" : "width";
 				var _rLength:Number = iData[_length] - iData.obj[_length];
 				var _lengthP:Number = _rLength / _scrollHeight;
-				var _drag:Sprite = _scrollSkin["line"]["drag"] as Sprite;
 				getDefinitionByName(AisySkin.TWEEN_LITE).to(_drag, duration, {y: p / _lengthP, onUpdate: __tweenUpdateHandler});
 				_utimer = null;
 			});
@@ -270,7 +271,7 @@ package org.aisy.scroller
 		protected function __addEvent():void
 		{
 			if (null !== _scrollSkin) {
-				iData.scroller.addEventListener(MouseEvent.MOUSE_WHEEL, __scrollHandler);
+				if ((_layout === 1 ? iData.isScrollWheelV : iData.isScrollWheelH) === true) iData.scroller.addEventListener(MouseEvent.MOUSE_WHEEL, __scrollHandler);
 				if (iData.mode === 1) _scrollSkin.addEventListener(MouseEvent.ROLL_OVER, __scrollHandler);
 				_scrollSkin.addEventListener(MouseEvent.MOUSE_DOWN, __scrollHandler);
 			}
@@ -306,13 +307,14 @@ package org.aisy.scroller
 		protected function __scrollHandler(e:MouseEvent):void {
 			if (iData.enabled === false) return;
 			iData.moveDuration = 0;
+			var _line:DisplayObjectContainer = _scrollSkin["line"];
+			var _linee:DisplayObject = _line["line"];
+			var _drag:Sprite = _line["drag"] as Sprite;
+			var _scrollHeight:Number = _line.height - _drag.height;
 			var _coor:String = _layout === 1 ? "y" : "x";
 			var _length:String = _layout === 1 ? "height" : "width";
 			var _rLength:Number = iData[_length] - iData.obj[_length];
 			var _lengthP:Number = _rLength / _scrollHeight;
-			var _line:DisplayObjectContainer = _scrollSkin["line"];
-			var _linee:DisplayObject = _line["line"];
-			var _drag:Sprite = _line["drag"] as Sprite;
 			var _y:Number;
 			var _h:Number;
 			switch (e.type) {
@@ -408,7 +410,7 @@ package org.aisy.scroller
 					else if (_layout === 2 && e.shiftKey === false && iData.isShiftKey === true) return;
 					getDefinitionByName(AisySkin.TWEEN_LITE).killTweensOf(iData.obj);
 					getDefinitionByName(AisySkin.TWEEN_LITE).killTweensOf(_drag);
-					_h = iData.delta !== 0 ? (iData.delta * (e.delta > 0 ? 1 : -1)) : e.delta;
+					_h = iData.delta > 0 ? (iData.delta * (e.delta > 0 ? 1 : -1)) : (iData.delta !== 0 ? -iData.delta * e.delta : e.delta);
 					_y = iData.obj[_coor] + _h;
 					if (_y > 0) _y = 0;
 					else if (_y + iData.obj[_length] < iData[_length]) _y = iData[_length] - iData.obj[_length];
@@ -481,7 +483,7 @@ package org.aisy.scroller
 				if (value === 0 && null !== parent) {
 					parent.removeChild(this);
 				}
-				else if (null === parent && null !== iData.scroller) {
+				else if (null === parent && null !== iData.scroller && (_layout === 1 ? iData.isScrollV : iData.isScrollH) === true) {
 					iData.scroller.addChild(this);
 				}
 			}
@@ -493,9 +495,15 @@ package org.aisy.scroller
 		 */
 		public function updateView(b:Boolean = false):void
 		{
-			__removeEvent();
-			__addEvent();
-			__layout(b);
+			_isShowing = b;
+			if (_isShowing === false) {
+				__removeEvent();
+				__addEvent();
+				_isMouseDown = false;
+				_isRollOver = false;
+			}
+			__layout();
+			_isShowing = false;
 		}
 		
 		/**

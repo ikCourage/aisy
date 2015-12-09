@@ -15,17 +15,20 @@ if (dom) {
 	var items = lib.getSelectedItems();
 	if (items.length) {
 		var of = function (ie) {
+			var b = ie.linkageBaseClass != "org.aisy.display.UButtonUI";
+			var b2 = !ie.linkageClassName;
 			//if (ie.scalingGrid != true) ie.scalingGrid = true;
 			if (ie.linkageImportForRS == true) ie.linkageImportForRS = false;
 			if (ie.linkageExportForAS != true) ie.linkageExportForAS = true;
 			if (ie.linkageExportInFirstFrame != true) ie.linkageExportInFirstFrame = true;
-			if (ie.linkageBaseClass != "org.aisy.display.UButtonUI") {
+			if (b) {
 				ie.linkageBaseClass = "org.aisy.display.UButtonUI";
-				if (!ie.linkageClassName || ie.linkageClassName == ie.name.replace(/.*[\\\/](.+)$/, "$1").replace(/\s+/g, "") || !/^[\w\d\.\_]+$/ig.test(ie.linkageClassName)) {
+				if (b2) {
 					ie.linkageClassName = "UB_" + (new Date()).getTime() + "_" + Math.random().toString().substr(2);
 				}
 			}
 		};
+		var item;
 		for (var i = 0, l = items.length; i < l; i++) {
 			item = items[i];
 			if (item.itemType == "button") {

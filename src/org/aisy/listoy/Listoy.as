@@ -88,6 +88,7 @@ package org.aisy.listoy
 		{
 			var s:uint, l:Number;
 			if (iData.column === 1) {
+				if (iData.row >= iData.dataProvider.length) return;
 				l = -(y + iData.marginV);
 				if (l > 0) {
 					s = l / iData.moveHeight;
@@ -97,6 +98,7 @@ package org.aisy.listoy
 				}
 			}
 			else {
+				if (iData.column >= iData.dataProvider.length) return;
 				l = -(x + iData.marginH);
 				if (l > 0) {
 					s = l / iData.moveWidth;

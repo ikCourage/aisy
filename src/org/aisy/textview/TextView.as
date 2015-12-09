@@ -114,10 +114,10 @@ package org.aisy.textview
 			if (width > 0 && this.width > width) {
 				getTextField().wordWrap = true;
 				getTextField().width = width;
-				if (height > 0 && this.height > height) {
-					getTextField().autoSize = TextFieldAutoSize.NONE;
-					getTextField().height = height;
-				}
+			}
+			if (height > 0 && this.height > height) {
+				getTextField().autoSize = TextFieldAutoSize.NONE;
+				getTextField().height = height;
 			}
 			__layout();
 			value = null;

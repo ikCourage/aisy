@@ -105,7 +105,7 @@ package org.aisy.scroller
 		protected function __addEvent():void
 		{
 			if ((AisySkin.MOBILE === true || getData().mobile === true) && getData().mode !== 0) {
-				addEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
+				getData().group.addEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
 			}
 		}
 		
@@ -114,7 +114,7 @@ package org.aisy.scroller
 		 */
 		protected function __removeEvent():void
 		{
-			removeEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
+			getData().group.removeEventListener(MouseEvent.MOUSE_DOWN, __mouseHandler);
 			
 			Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_UP, __mouseHandler);
 			Ais.IMain.stage.removeEventListener(MouseEvent.MOUSE_MOVE, __mouseHandler);
@@ -304,7 +304,7 @@ package org.aisy.scroller
 		{
 			getData().scroller = this;
 			if (layout === 1) {
-				getData().isScrollV = false;
+				getData().isScrollV = true;
 				if (getData().height < getData().obj.height) {
 					if (null !== value && null === getData().scrollV) getData().scrollV = new ScrollBar(getData(), layout);
 					if (null !== value) getData().scrollV.setSkin(value);
@@ -312,27 +312,33 @@ package org.aisy.scroller
 						addChild(getData().scrollV);
 						getData().scrollV.updateView();
 						getData().isShiftKey = true;
-						getData().isScrollV = true;
+					}
+					else {
+						getData().isScrollV = false;
 					}
 				}
 				else {
+					getData().isScrollV = false;
+					getData().isShiftKey = false;
 					if (null === getData().scrollV) return;
 					getData().scrollV.clearView();
-					getData().isShiftKey = false;
 				}
 			}
 			else {
-				getData().isScrollH = false;
+				getData().isScrollH = true;
 				if (getData().width < getData().obj.width) {
 					if (null !== value && null === getData().scrollH) getData().scrollH = new ScrollBar(getData(), layout);
 					if (null !== value) getData().scrollH.setSkin(value);
 					if (null !== getData().scrollH) {
 						addChild(getData().scrollH);
 						getData().scrollH.updateView();
-						getData().isScrollH = true;
+					}
+					else {
+						getData().isScrollH = false;
 					}
 				}
 				else {
+					getData().isScrollH = false;
 					if (null === getData().scrollH) return;
 					getData().scrollH.clearView();
 				}
@@ -412,14 +418,14 @@ package org.aisy.scroller
 		{
 			switch (layout) {
 				case 0:
-					getData().dragMinSizeH = value;
-					getData().dragMinSizeV = value;
+					getData().overflowH = value;
+					getData().overflowV = value;
 					break;
 				case 1:
-					getData().dragMinSizeH = value;
+					getData().overflowH = value;
 					break;
 				case 2:
-					getData().dragMinSizeV = value;
+					getData().overflowV = value;
 					break;
 			}
 		}
@@ -452,6 +458,15 @@ package org.aisy.scroller
 		}
 		
 		/**
+		 * 设置 是否锁定
+		 * @param value
+		 */
+		public function setLock(value:Boolean):void
+		{
+			getData().lock = value;
+		}
+		
+		/**
 		 * 设置 滚动条显示
 		 * 当 layout = 0 时，设置（横向、竖向）显示
 		 * 当 layout = 1 时，设置（横向）显示
@@ -471,6 +486,30 @@ package org.aisy.scroller
 					break;
 				case 2:
 					if (null !== getData().scrollH) getData().scrollH.visible = visible;
+					break;
+			}
+		}
+		
+		/**
+		 * 设置 滚动条滚轮是否可用
+		 * 当 layout = 0 时，设置（横向、竖向）
+		 * 当 layout = 1 时，设置（横向）
+		 * 当 layout = 2 时，设置（竖向）
+		 * @param visible
+		 * @param layout
+		 */
+		public function setScrollWheel(value:Boolean, layout:uint = 0):void
+		{
+			switch (layout) {
+				case 0:
+					getData().isScrollWheelH = value;
+					getData().isScrollWheelV = value;
+					break;
+				case 1:
+					getData().isScrollWheelV = value;
+					break;
+				case 2:
+					getData().isScrollWheelH = value;
 					break;
 			}
 		}
@@ -612,6 +651,10 @@ package org.aisy.scroller
 			var b:Boolean = updateViewType === 1 ? true : false;
 			var _x:Number = getData().width - getData().obj.width;
 			var _y:Number = getData().height - getData().obj.height;
+			if (getData().lock === true) {
+				x = getData().obj.x;
+				y = getData().obj.y;
+			}
 			x = x > 0 ? 0 : x;
 			y = y > 0 ? 0 : y;
 			x = x < _x ? _x : x;
@@ -620,6 +663,8 @@ package org.aisy.scroller
 			y = getData().isScrollV === true ? y : 0;
 			var f:Function = function ():void
 			{
+				x = getData().obj.x;
+				y = getData().obj.y;
 				switch (layout) {
 					case 0:
 						if (getData().isScrollH === true) if (updateViewType !== 0) getData().scrollH.updateView(b);
@@ -632,6 +677,8 @@ package org.aisy.scroller
 						if (getData().isScrollH === true) if (updateViewType !== 0) getData().scrollH.updateView(b);
 						break;
 				}
+				getData().obj.x = x;
+				getData().obj.y = y;
 			};
 			switch (layout) {
 				case 0:
@@ -684,6 +731,15 @@ package org.aisy.scroller
 		public function getAutoAlpha():Boolean
 		{
 			return getData().autoAlpha;
+		}
+		
+		/**
+		 * 返回 是否锁定
+		 * @return
+		 */
+		public function getLock():Boolean
+		{
+			return getData().lock;
 		}
 		
 		/**

@@ -190,6 +190,14 @@ package org.aisy.scroller
 		 */
 		public var isScrollV:Boolean;
 		/**
+		 * 横向滚动条滚轮是否可用
+		 */
+		public var isScrollWheelH:Boolean = true;
+		/**
+		 * 竖向滚动条滚轮是否可用
+		 */
+		public var isScrollWheelV:Boolean = true;
+		/**
 		 * 鼠标是否按下
 		 */
 		public var isMouseDown:Boolean;
@@ -201,6 +209,10 @@ package org.aisy.scroller
 		 * 当 alpha 为 0 时，是否自动移除显示
 		 */
 		public var autoAlpha:Boolean = AisySkin.SCROLLER_AUTO_ALPHA;
+		/**
+		 * 是否锁定滚动条
+		 */
+		public var lock:Boolean;
 		
 		public function ScrollerData()
 		{

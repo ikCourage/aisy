@@ -1,1 +1,1 @@
-需要引入 ais&y 组件库 和 greensock
+需要引入 aisy 组件库 和 greensock

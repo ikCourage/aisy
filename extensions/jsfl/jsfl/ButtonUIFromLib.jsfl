@@ -15,18 +15,20 @@ if (dom) {
 	var items = lib.getSelectedItems();
 	if (items.length) {
 		var of = function (ie) {
+			var b = ie.linkageBaseClass != "org.aisy.display.ButtonUI";
+			var b2 = !ie.linkageClassName;
 			//if (ie.scalingGrid != true) ie.scalingGrid = true;
 			if (ie.linkageImportForRS == true) ie.linkageImportForRS = false;
 			if (ie.linkageExportForAS != true) ie.linkageExportForAS = true;
 			if (ie.linkageExportInFirstFrame != true) ie.linkageExportInFirstFrame = true;
-			if (ie.linkageBaseClass != "org.aisy.button.ButtonUI") {
+			if (b) {
 				ie.linkageBaseClass = "org.aisy.button.ButtonUI";
-				if (!ie.linkageClassName || ie.linkageClassName == ie.name.replace(/.*[\\\/](.+)$/, "$1").replace(/\s+/g, "") || !/^[\w\d\.\_]+$/ig.test(ie.linkageClassName)) {
+				if (b2) {
 					ie.linkageClassName = "B_" + (new Date()).getTime() + "_" + Math.random().toString().substr(2);
 				}
 			}
 		};
-		var e;
+		var item, item2, e, e2;
 		for (var i = 0, j = 0, l = items.length; i < l; i++) {
 			item = items[i];
 			if (item.itemType == "movie clip" && null != item.timeline) {
@@ -41,16 +43,19 @@ if (dom) {
 								item.timeline.addNewLayer("hitArea", "normal", false);
 								item.timeline.setSelectedLayers(++j);
 								lib.addItemToDocument({"x": 0, "y": 0}, e.libraryItem.name);
-								e = item.timeline.layers[j].frames[0].elements[0];
-								e.x = e.y = 0;
-								e.blendMode = 'alpha';
-								e.name = "hitA";
+								e2 = item.timeline.layers[j].frames[0].elements[0];
+								e2.width = e.width;
+								e2.height = e.height;
+								e2.x = e.x;
+								e2.y = e.y;
+								e2.blendMode = 'alpha';
+								e2.name = "hitA";
 								item.timeline.layers[j].locked = true;
 								item.timeline.layers[j].visible = false;
 							}
 						}
 						lib.addNewItem("movie clip", item.name + "_BUTTON");
-						var item2 = lib.getSelectedItems()[0];
+						item2 = lib.getSelectedItems()[0];
 						lib.editItem();
 						lib.addItemToDocument({"x": 0, "y": 0}, item.name);
 						e = item2.timeline.layers[0].frames[0].elements[0];

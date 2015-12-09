@@ -15,13 +15,15 @@ if (dom) {
 	var name = prompt("Type in the name");
 	if (null != name) {
 		var of = function (ie) {
+			var b = ie.linkageBaseClass != "org.aisy.display.UMovieClipUI";
+			var b2 = !ie.linkageClassName;
 			//if (ie.scalingGrid != true) ie.scalingGrid = true;
 			if (ie.linkageImportForRS == true) ie.linkageImportForRS = false;
 			if (ie.linkageExportForAS != true) ie.linkageExportForAS = true;
 			if (ie.linkageExportInFirstFrame != true) ie.linkageExportInFirstFrame = true;
-			if (ie.linkageBaseClass != "org.aisy.display.UMovieClipUI") {
+			if (b) {
 				ie.linkageBaseClass = "org.aisy.display.UMovieClipUI";
-				if (!ie.linkageClassName || ie.linkageClassName == ie.name.replace(/.*[\\\/](.+)$/, "$1").replace(/\s+/g, "") || !/^[\w\d\.\_]+$/ig.test(ie.linkageClassName)) {
+				if (b2) {
 					ie.linkageClassName = "UM_" + (new Date()).getTime() + "_" + Math.random().toString().substr(2);
 				}
 			}

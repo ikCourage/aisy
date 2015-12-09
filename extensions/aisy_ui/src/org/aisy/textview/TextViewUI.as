@@ -24,7 +24,7 @@ package org.aisy.textview
 			tabChildren = false;
 			if (numChildren !== 0) {
 				_textField = getChildAt(0) as TextField;
-				_textField.mouseEnabled = _textField.mouseWheelEnabled = false;
+				_textField.mouseEnabled = _textField.mouseWheelEnabled = _textField.tabEnabled = false;
 				_textFormat = _textField.defaultTextFormat;
 				_showWidth = _textField.width * scaleX;
 				_showHeight = _textField.height * scaleY;
