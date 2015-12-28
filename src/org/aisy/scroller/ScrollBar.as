@@ -106,11 +106,11 @@ package org.aisy.scroller
 			var _scrollHeight:Number = _line.height - _drag.height;
 			_drag.y = _dragY2;
 			if (_layout === 1) {
-				if (iData.mode !== 0) _scrollSkin.x = iData.width - _scrollSkin.width;
+				if (iData.mode !== 0 && iData.mode !== 3) _scrollSkin.x = iData.width - _scrollSkin.width;
 				else _scrollSkin.x = iData.width + iData.paddingH;
 			}
 			else {
-				if (iData.mode !== 0) _scrollSkin.y = iData.height;
+				if (iData.mode !== 0 && iData.mode !== 3) _scrollSkin.y = iData.height;
 				else _scrollSkin.y = iData.height + _scrollSkin.height + iData.paddingV;
 			}
 			if (iData.isMouseDown === true || _isShowing === true) {
@@ -272,7 +272,7 @@ package org.aisy.scroller
 		{
 			if (null !== _scrollSkin) {
 				if ((_layout === 1 ? iData.isScrollWheelV : iData.isScrollWheelH) === true) iData.scroller.addEventListener(MouseEvent.MOUSE_WHEEL, __scrollHandler);
-				if (iData.mode === 1) _scrollSkin.addEventListener(MouseEvent.ROLL_OVER, __scrollHandler);
+				if (iData.mode === 1 || iData.mode === 3) _scrollSkin.addEventListener(MouseEvent.ROLL_OVER, __scrollHandler);
 				_scrollSkin.addEventListener(MouseEvent.MOUSE_DOWN, __scrollHandler);
 			}
 		}
@@ -397,7 +397,7 @@ package org.aisy.scroller
 						iData.isMouseDown = false;
 						_isMouseDown = false;
 					}
-					if (iData.mode === 1 && _isRollOver === false) {
+					if ((iData.mode === 1 || iData.mode === 3) && _isRollOver === false) {
 						getDefinitionByName(AisySkin.TWEEN_LITE).to(this, iData.scrollShowDuration, {alpha: 1, onComplete: __tweenCompleteHandler});
 					}
 					break;
@@ -419,7 +419,7 @@ package org.aisy.scroller
 //					if (iData.mode !== 0) getDefinitionByName(AisySkin.TWEEN_LITE).to(this, iData.scrollShowDuration, {alpha: 1, onComplete: __tweenCompleteHandler});
 					break;
 				case MouseEvent.ROLL_OVER:
-					if (iData.mode === 1) {
+					if (iData.mode === 1 || iData.mode === 3) {
 						_isRollOver = true;
 						_scrollSkin.removeEventListener(e.type, __scrollHandler);
 						_scrollSkin.addEventListener(MouseEvent.ROLL_OUT, __scrollHandler);
@@ -432,7 +432,7 @@ package org.aisy.scroller
 					}
 					break;
 				case MouseEvent.ROLL_OUT:
-					if (iData.mode === 1) {
+					if (iData.mode === 1 || iData.mode === 3) {
 						_isRollOver = false;
 						_scrollSkin.removeEventListener(e.type, __scrollHandler);
 						_scrollSkin.addEventListener(MouseEvent.ROLL_OVER, __scrollHandler);
@@ -478,6 +478,7 @@ package org.aisy.scroller
 		
 		override public function set alpha(value:Number):void
 		{
+			if (iData.mode === 3) return;
 			super.alpha = value;
 			if (null !== iData && iData.autoAlpha === true) {
 				if (value === 0 && null !== parent) {
