@@ -478,9 +478,9 @@ package org.aisy.scroller
 		
 		override public function set alpha(value:Number):void
 		{
-			if (iData.mode === 3) return;
+			if (null === iData || iData.mode === 3) return;
 			super.alpha = value;
-			if (null !== iData && iData.autoAlpha === true) {
+			if (iData.autoAlpha === true) {
 				if (value === 0 && null !== parent) {
 					parent.removeChild(this);
 				}
