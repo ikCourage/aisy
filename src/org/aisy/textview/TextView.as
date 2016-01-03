@@ -219,9 +219,12 @@ package org.aisy.textview
 		public function setShowSize(width:Number = 0, height:Number = 0, useFormat:Boolean = false, ellipsis:String = "..."):Boolean
 		{
 			if (width <= 0) return false;
+			if (_textField.width <= width && (height > 0 && _textField.height <= height)) {
+				if (_textField.textWidth > width || (height > 0 && _textField.textHeight > height)) return true;
+				return false;
+			}
 			if (_textField.wordWrap !== false) _textField.wordWrap = false;
 			if (_textField.autoSize !== TextFieldAutoSize.LEFT) _textField.autoSize = TextFieldAutoSize.LEFT;
-			if (_textField.width <= width) return false;
 			var _text:String = _textField.text;
 			var b:Boolean, i:uint = _text.length >> 1, j:Number;
 			

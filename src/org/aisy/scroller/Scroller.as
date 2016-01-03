@@ -303,6 +303,7 @@ package org.aisy.scroller
 		public function setSkin(value:DisplayObjectContainer, layout:uint = 1):void
 		{
 			getData().scroller = this;
+			getData().isShiftKey = false;
 			if (layout === 1) {
 				getData().isScrollV = true;
 				if (getData().height < getData().obj.height) {
@@ -311,7 +312,6 @@ package org.aisy.scroller
 					if (null !== getData().scrollV) {
 						addChild(getData().scrollV);
 						getData().scrollV.updateView();
-						getData().isShiftKey = true;
 					}
 					else {
 						getData().isScrollV = false;
@@ -319,7 +319,6 @@ package org.aisy.scroller
 				}
 				else {
 					getData().isScrollV = false;
-					getData().isShiftKey = false;
 					if (null === getData().scrollV) return;
 					getData().scrollV.clearView();
 				}
@@ -343,14 +342,17 @@ package org.aisy.scroller
 					getData().scrollH.clearView();
 				}
 			}
+			if (getData().isScrollV === true && getData().isScrollH === true) {
+				getData().isShiftKey = true;
+			}
 			value = null;
 		}
 		
 		/**
 		 * 设置 布局样式
 		 * 当 layout = 0 时，设置（横向、竖向）布局
-		 * 当 layout = 1 时，设置（横向）布局
-		 * 当 layout = 2 时，设置（竖向）布局
+		 * 当 layout = 1 时，设置（竖向）布局
+		 * 当 layout = 2 时，设置（横向）布局
 		 * @param layout
 		 */
 		public function setLayout(layout:uint = 0):void
@@ -361,8 +363,8 @@ package org.aisy.scroller
 		/**
 		 * 设置 内部缩进
 		 * 当 layout = 0 时，设置（横向缩进、竖向缩进）
-		 * 当 layout = 1 时，设置（横向缩进）
-		 * 当 layout = 2 时，设置（竖向缩进）
+		 * 当 layout = 1 时，设置（竖向缩进）
+		 * 当 layout = 2 时，设置（横向缩进）
 		 * @param padding
 		 * @param layout
 		 */
@@ -374,10 +376,10 @@ package org.aisy.scroller
 					getData().paddingV = padding;
 					break;
 				case 1:
-					getData().paddingH = padding;
+					getData().paddingV = padding;
 					break;
 				case 2:
-					getData().paddingV = padding;
+					getData().paddingH = padding;
 					break;
 			}
 		}
@@ -385,8 +387,8 @@ package org.aisy.scroller
 		/**
 		 * 设置 滑块最小尺寸
 		 * 当 layout = 0 时，设置（横向尺寸、竖向尺寸）
-		 * 当 layout = 1 时，设置（横向尺寸）
-		 * 当 layout = 2 时，设置（竖向尺寸）
+		 * 当 layout = 1 时，设置（竖向尺寸）
+		 * 当 layout = 2 时，设置（横向尺寸）
 		 * @param value
 		 * @param layout
 		 */
@@ -398,10 +400,10 @@ package org.aisy.scroller
 					getData().dragMinSizeV = value;
 					break;
 				case 1:
-					getData().dragMinSizeH = value;
+					getData().dragMinSizeV = value;
 					break;
 				case 2:
-					getData().dragMinSizeV = value;
+					getData().dragMinSizeH = value;
 					break;
 			}
 		}
@@ -409,8 +411,8 @@ package org.aisy.scroller
 		/**
 		 * 设置 滑动溢出比例
 		 * 当 layout = 0 时，设置（横向比例、竖向比例）
-		 * 当 layout = 1 时，设置（横向比例）
-		 * 当 layout = 2 时，设置（竖向比例）
+		 * 当 layout = 1 时，设置（竖向比例）
+		 * 当 layout = 2 时，设置（横向比例）
 		 * @param value
 		 * @param layout
 		 */
@@ -422,10 +424,10 @@ package org.aisy.scroller
 					getData().overflowV = value;
 					break;
 				case 1:
-					getData().overflowH = value;
+					getData().overflowV = value;
 					break;
 				case 2:
-					getData().overflowV = value;
+					getData().overflowH = value;
 					break;
 			}
 		}
@@ -469,8 +471,8 @@ package org.aisy.scroller
 		/**
 		 * 设置 滚动条显示
 		 * 当 layout = 0 时，设置（横向、竖向）显示
-		 * 当 layout = 1 时，设置（横向）显示
-		 * 当 layout = 2 时，设置（竖向）显示
+		 * 当 layout = 1 时，设置（竖向）显示
+		 * 当 layout = 2 时，设置（横向）显示
 		 * @param visible
 		 * @param layout
 		 */
@@ -493,8 +495,8 @@ package org.aisy.scroller
 		/**
 		 * 设置 滚动条滚轮是否可用
 		 * 当 layout = 0 时，设置（横向、竖向）
-		 * 当 layout = 1 时，设置（横向）
-		 * 当 layout = 2 时，设置（竖向）
+		 * 当 layout = 1 时，设置（竖向）
+		 * 当 layout = 2 时，设置（横向）
 		 * @param visible
 		 * @param layout
 		 */
