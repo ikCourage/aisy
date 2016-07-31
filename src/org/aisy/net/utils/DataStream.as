@@ -1,5 +1,6 @@
 package org.aisy.net.utils
 {
+	import flash.net.URLRequest;
 	import flash.net.URLStream;
 	
 	import org.ais.system.Memory;
@@ -27,6 +28,12 @@ package org.aisy.net.utils
 		
 		public function DataStream()
 		{
+		}
+		
+		override public function load(request:URLRequest):void
+		{
+			super.load(URI.relativeURL(request) as URLRequest);
+			request = null;
 		}
 		
 		/**

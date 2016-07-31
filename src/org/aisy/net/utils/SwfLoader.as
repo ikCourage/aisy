@@ -67,7 +67,7 @@ package org.aisy.net.utils
 				}
 			}
 			_loaderContext = context;
-			_loader.load(request is String ? new URLRequest(request as String) : request as URLRequest, context);
+			_loader.load(URI.relativeURL(request is String ? new URLRequest(request as String) : request) as URLRequest, context);
 			request = null;
 			context = null;
 		}

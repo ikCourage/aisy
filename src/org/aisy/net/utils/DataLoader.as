@@ -32,6 +32,12 @@ package org.aisy.net.utils
 			request = null;
 		}
 		
+		override public function load(request:URLRequest):void
+		{
+			super.load(URI.relativeURL(request) as URLRequest);
+			request = null;
+		}
+		
 		/**
 		 * 设置动态数据
 		 * @param value

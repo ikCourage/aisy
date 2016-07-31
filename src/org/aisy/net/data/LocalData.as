@@ -2,8 +2,10 @@ package org.aisy.net.data
 {
 	import flash.net.SharedObject;
 	import flash.net.SharedObjectFlushStatus;
+	import flash.utils.ByteArray;
 	import flash.utils.getDefinitionByName;
 	
+	import org.ais.system.Ais;
 	import org.aisy.autoclear.AisyAutoClear;
 	import org.aisy.interfaces.IClear;
 	import org.aisy.utils.AisyUtil;
@@ -35,46 +37,30 @@ package org.aisy.net.data
 				_localPath = localPath;
 				if (null === localPath) {
 					var nApp:Class = getDefinitionByName("flash.desktop.NativeApplication") as Class;
-					var xml:XML = nApp.nativeApplication.applicationDescriptor;
-					var ns:Namespace = new Namespace(xml.namespace());
-					var arr:Array = (getDefinitionByName("flash.filesystem.File") as Class).applicationStorageDirectory.nativePath.split(/[\\\/]/);
-					var appName:String = String(xml.ns::filename);
-					var appName2:String;
+					var appName:String;
 					if (nApp.nativeApplication.openedWindows.length === 0) {
-						appName2 = appName;
+						var xml:XML = nApp.nativeApplication.applicationDescriptor;
+						var ns:Namespace = new Namespace(xml.namespace());
+						appName = String(xml.ns::filename);
+						xml = null;
+						ns = null;
 					}
 					else {
-						appName2 = nApp.nativeApplication.openedWindows[0].stage.loaderInfo.url.replace(/^app\:/ig, "");
+						appName = nApp.nativeApplication.openedWindows[0].stage.loaderInfo.url;
+						if (appName.indexOf("[[DYNAMIC]]") !== -1) {
+							var k:int = Ais.IMain && Ais.IMain.hasOwnProperty("Swf") ? Ais.IMain.Swf.hasSwf("url", appName) : -1;
+							if (k !== -1) appName = Ais.IMain.Swf.get(k, "__url");
+							if (k === -1 || !appName) throw new Error("Cannot be used in loadBytes, or use outside imoon.");
+						}
+						appName = appName.replace(/\?.*/g, "").replace(/^\s+|\s+$/, "").replace(/[\/\\]+/g, "/").replace(/\:/g, "%7C").replace(/\|/g, "%3A");
 					}
-					_localPath = "file:///" + arr.slice(0, arr.length - 2).join("/") + "/" + appName + "/Aisy Data/.LocalData/" + appName2 + "/";
-					deleteEmptyDirectory();
+					_localPath = (getDefinitionByName("flash.filesystem.File") as Class).applicationStorageDirectory.nativePath.replace(/\\/g, "/") + "/Aisy Data/.LocalData/" + appName + "/";
 					nApp = null;
-					xml = null;
-					ns = null;
-					arr = null;
 					appName = null;
-					appName2 = null;
 				}
 			}
 			name = null;
 			localPath = null;
-		}
-		
-		protected function deleteEmptyDirectory():void
-		{
-			var fCls:Class = getDefinitionByName("flash.filesystem.File") as Class;
-			var f:* = fCls.applicationStorageDirectory;
-			while (null !== f && f.exists === true) {
-				if (f.getDirectoryListing().length !== 0) {
-					f.cancel();
-					break;
-				}
-				f.deleteDirectory();
-				f.cancel();
-				f = new fCls(f.nativePath.replace(/[^\\\/]*$/, ""));
-			}
-			f = null;
-			fCls = null;
 		}
 		
 		public function get isLocal():Boolean
@@ -102,6 +88,19 @@ package org.aisy.net.data
 			f.cancel();
 			f = null;
 			return _data;
+		}
+		
+		public function get size():uint
+		{
+			if (_isDestop === false) {
+				return (_data as SharedObject).size;
+			}
+			var b:ByteArray = new ByteArray();
+			b.writeObject(data);
+			var l:uint = b.length;
+			b.clear();
+			b = null;
+			return l;
 		}
 		
 		public function flush(minDiskSpace:int = 0):String
