@@ -52,7 +52,7 @@ package org.aisy.net.data
 							if (k !== -1) appName = Ais.IMain.Swf.get(k, "__url");
 							if (k === -1 || !appName) throw new Error("Cannot be used in loadBytes, or use outside imoon.");
 						}
-						appName = appName.replace(/\?.*/g, "").replace(/^\s+|\s+$/, "").replace(/[\/\\]+/g, "/").replace(/\:/g, "%7C").replace(/\|/g, "%3A");
+						appName = appName.replace(/^(file|app)\:/i, "").replace(/\?.*/g, "").replace(/^\s+|\s+$/, "").replace(/[\/\\]+/g, "/").replace(/\:/g, "%7C").replace(/\|/g, "%3A");
 					}
 					_localPath = (getDefinitionByName("flash.filesystem.File") as Class).applicationStorageDirectory.nativePath.replace(/\\/g, "/") + "/Aisy Data/.LocalData/" + appName + "/";
 					nApp = null;
